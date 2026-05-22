@@ -81,7 +81,7 @@ mkdir -p ~/.codex/skills/ship && cp skills/ship/SKILL.md ~/.codex/skills/ship/SK
 
 `/ship` orchestrates these Claude Code built-ins — no external dependencies needed:
 
-- `/model claude-opus-4-7` — switches to the strongest model for planning
+- `/model opusplan` — Opus for planning, auto-switches to Sonnet for execution
 - `/batch` — parallel implementation across isolated git worktrees
 - `/goal` — autonomous quality loops for verify, simplify, and security phases
 - `security-review` skill — built-in security audit
