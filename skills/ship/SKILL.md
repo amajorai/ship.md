@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Full-cycle development workflow for any non-trivial feature or fix. Runs 9 phases — interview, explore, plan, implement, verify, edge cases, simplify, security review, final verify — using the strongest available model for planning and autonomous goal loops for quality gates. Use when asked to implement a feature, fix a bug, or ship something with full quality assurance.
+description: Full-cycle development workflow for any non-trivial feature or fix. Runs up to 10 phases — interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify — using the strongest available model for planning and autonomous goal loops for quality gates. Use when asked to implement a feature, fix a bug, or ship something with full quality assurance.
 argument-hint: <task description>
 ---
 
@@ -21,6 +21,7 @@ Ask the user about (combine related questions — don't fire them one by one):
 - **Acceptance criteria**: What does done look like? How will we verify correctness?
 - **Constraints**: Performance requirements, backwards compatibility, existing patterns to follow, team conventions?
 - **Ambiguities**: Unclear terms, conflicting requirements, or edge cases in the task description?
+- **Quality gates**: Which hardening phases do you want after implementation? Options: edge cases (`/edge-cases`), E2E tests (`/e2e`), both, or neither. Default: both.
 
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
@@ -80,6 +81,8 @@ Do not proceed until every criterion passes.
 
 ## Phase 6: Edge Cases
 
+*Skip if edge cases were opted out in Phase 1.*
+
 Invoke the `edge-cases` skill, targeting the files and feature area changed in Phase 4:
 
 ```
@@ -91,7 +94,20 @@ This runs 8 parallel subagents to enumerate edge cases across boundary values, n
 Do not proceed until all P0 and P1 edge cases are covered and the full test suite passes.
 
 
-## Phase 7: Simplify
+## Phase 7: E2E Tests
+
+*Skip if E2E tests were opted out in Phase 1.*
+
+Invoke the `e2e` skill, targeting the flows and feature area changed in Phase 4:
+
+```
+/e2e <feature or flow to cover>
+```
+
+This discovers user flows, sets up Playwright (web) or Maestro (mobile) if needed, writes golden-path and critical edge-case tests, runs them, and fixes any failures. All tests must pass before proceeding.
+
+
+## Phase 8: Simplify
 
 Run `/goal` with this condition:
 
@@ -102,7 +118,7 @@ All code added or modified for this task is as simple as possible. No unnecessar
 Do not accept simplifications that break correctness — `/goal` will keep iterating until tests pass.
 
 
-## Phase 8: Security Review
+## Phase 9: Security Review
 
 - **Claude Code:** Invoke the built-in `security-review` skill.
 - **Codex / fallback:** Run `/goal` with this condition:
@@ -114,21 +130,23 @@ All changes have been audited for: (1) input validation at system boundaries; (2
 Document any accepted LOW or MEDIUM findings with explicit rationale before proceeding.
 
 
-## Phase 9: Final Verify
+## Phase 10: Final Verify
 
-Repeat Phase 5. Confirm the codebase is shippable after edge case hardening, simplification, and security fixes:
+Repeat Phase 5. Confirm the codebase is shippable after hardening, simplification, and security fixes:
 
 1. All original acceptance criteria still pass
 2. No regressions from Phase 6 (edge cases)
-3. No regressions from Phase 7 (simplify)
-4. No regressions from Phase 8 (security)
-5. Application is in a clean, deployable state
+3. No regressions from Phase 7 (E2E tests)
+4. No regressions from Phase 8 (simplify)
+5. No regressions from Phase 9 (security)
+6. Application is in a clean, deployable state
 
 
 ## Completion Report
 
 - What was implemented and which files changed
 - Edge cases found and hardened (count by priority tier)
+- E2E tests written (golden path + edge cases, if opted in)
 - Test coverage added or modified
 - Security findings and their resolutions
 - Any open limitations or recommended follow-up tasks
