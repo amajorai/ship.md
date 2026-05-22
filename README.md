@@ -19,7 +19,7 @@ flowchart TD
 | Skill | What it does |
 |-------|-------------|
 | [`/ship`](skills/ship/SKILL.md) | Full 9-phase pipeline: interview, explore, plan, implement, verify, edge cases, simplify, security review, final verify |
-| [`/ship-simple`](skills/ship-simple/SKILL.md) | Quick implementation for simple features that don't need the full pipeline. No security review, edge cases, or simplify pass |
+| [`/ship-fast`](skills/ship-fast/SKILL.md) | Quick implementation for simple features that don't need the full pipeline. No security review, edge cases, or simplify pass |
 
 ## Installation
 
@@ -44,7 +44,7 @@ npx skills add amajorai/ship.md/skills/ship
 /plugin install shipmd@amajorai
 ```
 
-Invoke as `/shipmd:ship <task>` or `/shipmd:ship-simple <task>`.
+Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
 
 ### install.sh (one-liner)
 

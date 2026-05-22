@@ -1,10 +1,10 @@
 ---
-name: ship-simple
+name: ship-fast
 description: Quick implementation workflow for simple features and fixes that don't need the full pipeline. Skips security review, edge case hardening, and simplification — explore, plan, implement, verify and done.
 argument-hint: <task description>
 ---
 
-# ship-simple — Quick Implementation Workflow
+# ship-fast — Quick Implementation Workflow
 
 **Task:** {{args}}
 

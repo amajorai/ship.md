@@ -1,0 +1,1 @@
+../../skills/ship-fast/SKILL.md
