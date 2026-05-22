@@ -55,16 +55,6 @@ cd ship.md
 ./install.sh --codex   # Codex       → ~/.codex/skills/  → $ship
 ```
 
-### Copy a single skill
-
-```bash
-# Claude Code
-cp skills/ship/SKILL.md ~/.claude/skills/ship.md
-
-# Codex
-mkdir -p ~/.codex/skills/ship && cp skills/ship/SKILL.md ~/.codex/skills/ship/SKILL.md
-```
-
 ## Built-in commands used
 
 `/ship` orchestrates these Claude Code built-ins — no external dependencies needed:
