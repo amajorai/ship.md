@@ -80,28 +80,13 @@ Do not proceed until every criterion passes.
 
 ## Phase 6: Edge Cases
 
-Spawn **8 parallel subagents**, one per category, targeting the files and feature area changed in Phase 4. Each enumerates every edge case it can find and returns a numbered list with a risk rating (LOW / MEDIUM / HIGH / CRITICAL).
+Invoke the `edge-cases` skill, targeting the files and feature area changed in Phase 4:
 
-| Subagent | Category | What to look for |
-|----------|----------|-----------------|
-| 1 | **Boundary values** | min/max, zero, one, empty, off-by-one, integer overflow/underflow, float precision |
-| 2 | **Null / missing / undefined** | null inputs, undefined fields, missing keys, unset env vars, absent config |
-| 3 | **Invalid input types & formats** | wrong type coercions, malformed strings, bad dates/times, invalid enums, unexpected encoding |
-| 4 | **Error states & exception paths** | network failures, timeouts, partial writes, disk full, DB unavailable, external service 500s |
-| 5 | **Concurrency & ordering** | race conditions, double-submit, out-of-order events, stale reads after writes, cache invalidation |
-| 6 | **Large / adversarial data** | very large payloads, deeply nested objects, extremely long strings, binary/emoji/RTL in text fields, injection attempts |
-| 7 | **State machine violations** | calling operations in wrong order, acting on deleted/expired/cancelled resources, re-entrancy |
-| 8 | **Auth & permission boundaries** | unauthenticated access, cross-tenant data leakage, privilege escalation, token expiry mid-request |
+```
+/edge-cases <feature area or changed files>
+```
 
-Each subagent must read the relevant source files before enumerating.
-
-**Prioritize & deduplicate:** Consolidate into a master list sorted by risk × likelihood — P0 (CRITICAL / near-certain), P1 (HIGH / plausible), P2 (MEDIUM), P3 (LOW). Present to the user and confirm before writing tests.
-
-**Write tests:** For each unhandled P0 and P1 case, write a focused test following the repo's existing test patterns. Run each test immediately — a failing test confirms the gap is real.
-
-**Harden:** For each failing test, implement the minimal fix, re-run the test, and verify no regressions. Fix one at a time.
-
-**Full suite:** Run `bun test` (or the project's test command). All tests must pass.
+This runs 8 parallel subagents to enumerate edge cases across boundary values, null inputs, invalid types, error states, concurrency, adversarial data, state machine violations, and auth boundaries. It then writes tests for every unhandled P0/P1 case, confirms each test fails before the fix and passes after, and verifies no regressions.
 
 Do not proceed until all P0 and P1 edge cases are covered and the full test suite passes.
 
