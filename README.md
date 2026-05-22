@@ -4,14 +4,14 @@ The end-to-end skill for shipping features without gaps. 9 phases from interview
 
 ```mermaid
 flowchart TD
-    A["🎤 Interview\nSurface requirements + acceptance criteria\nModel: Sonnet"] --> B["🔍 Explore\n3-5 parallel subagents map the codebase\nModel: Sonnet"]
-    B --> C["🧠 Plan\n/model opusplan\nModel: Opus"]
-    C --> D["⚡ Implement\n/batch — parallel isolated worktrees\nModel: Sonnet"]
-    D --> E["✅ Verify\n/goal — all acceptance criteria must pass\nModel: Sonnet"]
-    E --> F["🧪 Edge Cases\n8 parallel subagents across boundary categories\nModel: Sonnet"]
-    F --> G["✂️ Simplify\n/goal — no dead code or over-engineering\nModel: Sonnet"]
-    G --> H["🔒 Security Review\nsecurity-review skill — HIGH/CRITICAL fixed\nModel: Sonnet"]
-    H --> I["🏁 Final Verify\n/goal — clean deployable state confirmed\nModel: Sonnet"]
+    A["🎤 Interview (Sonnet)\nSurface requirements + acceptance criteria"] --> B["🔍 Explore (Sonnet)\n3-5 parallel subagents map the codebase"]
+    B --> C["🧠 Plan (Opus)\n/model opusplan"]
+    C --> D["⚡ Implement (Sonnet)\n/batch — parallel isolated worktrees"]
+    D --> E["✅ Verify (Sonnet)\n/goal — all acceptance criteria must pass"]
+    E --> F["🧪 Edge Cases (Sonnet)\n8 parallel subagents across boundary categories"]
+    F --> G["✂️ Simplify (Sonnet)\n/goal — no dead code or over-engineering"]
+    G --> H["🔒 Security Review (Sonnet)\nsecurity-review skill — HIGH/CRITICAL fixed"]
+    H --> I["🏁 Final Verify (Sonnet)\n/goal — clean deployable state confirmed"]
 ```
 
 ## Skills
