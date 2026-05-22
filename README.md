@@ -2,6 +2,18 @@
 
 The end-to-end skill for shipping features without gaps. 9 phases from interview to final verify. Wraps Claude Code's built-in `/batch`, `/goal`, and `/model` commands into a single quality-gated pipeline.
 
+```mermaid
+flowchart TD
+    A[Interview] --> B[Explore]
+    B --> C[Plan\n/model opusplan]
+    C --> D[Implement\n/batch]
+    D --> E[Verify\n/goal]
+    E --> F[Edge Cases]
+    F --> G[Simplify\n/goal]
+    G --> H[Security Review]
+    H --> I[Final Verify\n/goal]
+```
+
 ## Skills
 
 | Skill | What it does |
