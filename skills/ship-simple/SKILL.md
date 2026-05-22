@@ -8,7 +8,6 @@ argument-hint: <task description>
 
 **Task:** {{args}}
 
----
 
 ## Phase 1: Explore
 
@@ -22,7 +21,6 @@ Each subagent returns: what it found, what's relevant, and any risks or surprise
 
 Synthesize findings into a brief **Context Summary**: current state, key constraints, and suggested entry points.
 
----
 
 ## Phase 2: Plan
 
@@ -34,7 +32,6 @@ Produce a concrete plan specifying:
 
 Do not begin implementation until the user explicitly approves the plan.
 
----
 
 ## Phase 3: Implement
 
@@ -42,7 +39,6 @@ Execute the approved plan. For independent units, work in parallel using subagen
 
 Wait for all units to complete before moving to verification.
 
----
 
 ## Phase 4: Verify
 

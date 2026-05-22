@@ -10,7 +10,6 @@ You are orchestrating a comprehensive, quality-focused development pipeline. Wor
 
 **Task:** {{args}}
 
----
 
 ## Phase 1: Interview
 
@@ -25,7 +24,6 @@ Ask the user about (combine related questions — don't fire them one by one):
 
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
----
 
 ## Phase 2: Explore
 
@@ -41,7 +39,6 @@ Each subagent returns: what it found, what's relevant, and any risks or surprise
 
 Synthesize findings into a single **Context Summary**: current state, key constraints, implementation risks, suggested entry points.
 
----
 
 ## Phase 3: Plan
 
@@ -57,7 +54,6 @@ The plan must specify:
 
 Do not begin implementation until the user explicitly approves the plan.
 
----
 
 ## Phase 4: Implement
 
@@ -68,7 +64,6 @@ Decompose the approved plan into **independent units** and execute in parallel:
 
 Wait for all units to complete before moving to quality gates.
 
----
 
 ## Phase 5: Verify
 
@@ -82,7 +77,6 @@ All acceptance criteria from Phase 1 are met. All existing tests pass. No lintin
 
 Do not proceed until every criterion passes.
 
----
 
 ## Phase 6: Edge Cases
 
@@ -96,7 +90,6 @@ This runs 8 parallel subagents to enumerate edge cases across boundary values, n
 
 Do not proceed until all P0 and P1 edge cases are covered and the full test suite passes.
 
----
 
 ## Phase 7: Simplify
 
@@ -108,7 +101,6 @@ All code added or modified for this task is as simple as possible. No unnecessar
 
 Do not accept simplifications that break correctness — `/goal` will keep iterating until tests pass.
 
----
 
 ## Phase 8: Security Review
 
@@ -121,7 +113,6 @@ All changes have been audited for: (1) input validation at system boundaries; (2
 
 Document any accepted LOW or MEDIUM findings with explicit rationale before proceeding.
 
----
 
 ## Phase 9: Final Verify
 
@@ -133,7 +124,6 @@ Repeat Phase 5. Confirm the codebase is shippable after edge case hardening, sim
 4. No regressions from Phase 8 (security)
 5. Application is in a clean, deployable state
 
----
 
 ## Completion Report
 
