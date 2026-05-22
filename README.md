@@ -17,12 +17,19 @@ flowchart TD
 
 ## Skills
 
+### Core
+
 | Skill | What it does |
 |-------|-------------|
-| [`/ship`](skills/ship/SKILL.md) | Full 9-phase pipeline: interview, explore, plan, implement, verify, edge cases, simplify, security review, final verify |
+| [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify |
 | [`/ship-fast`](skills/ship-fast/SKILL.md) | Quick implementation for simple features that don't need the full pipeline. No security review, edge cases, or simplify pass |
-| [`/edge-cases`](skills/edge-cases/SKILL.md) | Systematic edge case discovery and hardening. Spawns 8 parallel subagents across boundary, null, concurrency, auth, and other categories. Required by `/ship` Phase 6 |
-| [`/e2e`](skills/e2e/SKILL.md) | End-to-end test authoring with Playwright (web) or Maestro (mobile/React Native/Flutter). Golden path + critical edge cases. Required by `/ship` Phase 7 |
+
+### Optional Dependencies
+
+| Skill | What it does |
+|-------|-------------|
+| [`/edge-cases`](skills/edge-cases/SKILL.md) | Systematic edge case discovery and hardening. Spawns 8 parallel subagents across boundary, null, concurrency, auth, and other categories. Opted in during `/ship` Phase 1 |
+| [`/e2e`](skills/e2e/SKILL.md) | End-to-end test authoring with Playwright (web) or Maestro (mobile/React Native/Flutter). Golden path + critical edge cases. Opted in during `/ship` Phase 1 |
 
 ## Quickstart
 
