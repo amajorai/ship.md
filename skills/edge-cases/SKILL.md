@@ -4,7 +4,7 @@ description: Systematic edge case discovery, test coverage, and hardening for an
 argument-hint: <feature, file, or area to harden>
 ---
 
-# edge-cases — Systematic Edge Case Discovery & Hardening
+# Edge Cases
 
 You are running a thorough edge case audit. Work through each phase in order. Do not skip phases.
 

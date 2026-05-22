@@ -4,7 +4,7 @@ description: End-to-end test authoring and execution for web, mobile, React Nati
 argument-hint: <feature, flow, or area to cover>
 ---
 
-# e2e — End-to-End Test Authoring & Execution
+# E2E
 
 You are writing end-to-end tests that simulate real user behavior. Work through each phase in order. Do not skip phases.
 

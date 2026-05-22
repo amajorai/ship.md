@@ -4,7 +4,7 @@ description: Quick implementation workflow for simple features and fixes that do
 argument-hint: <task description>
 ---
 
-# ship-fast — Quick Implementation Workflow
+# Ship Fast
 
 **Task:** {{args}}
 
