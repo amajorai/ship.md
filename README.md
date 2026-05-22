@@ -19,11 +19,25 @@ install.sh
 | Skill | What it does |
 |-------|-------------|
 | [`/ship`](skills/ship/SKILL.md) | Full 9-phase pipeline: interview, explore, plan, implement, verify, edge cases, simplify, security review, final verify |
-| [`/ship-simple`](skills/ship-simple/SKILL.md) | Streamlined 4-phase pipeline for tasks where requirements are already clear: explore, plan, implement, verify |
+| [`/ship-simple`](skills/ship-simple/SKILL.md) | Quick implementation for simple features that don't need the full pipeline — no security review, edge cases, or simplify pass |
 
 ## Installation
 
-### Claude Code plugin (recommended)
+### skills.sh (recommended)
+
+```bash
+npx skills add amajorai/ship.md
+```
+
+Installs both skills and auto-configures them for whichever coding agents you have installed (Claude Code, Codex, Cursor, and 50+ others).
+
+Install a single skill:
+
+```bash
+npx skills add amajorai/ship.md/skills/ship
+```
+
+### Claude Code plugin
 
 ```
 /plugin marketplace add amajorai/ship.md

@@ -1,10 +1,10 @@
 ---
 name: ship-simple
-description: Streamlined 4-phase development workflow for straightforward tasks. Runs explore, plan, implement, verify — no interview, edge cases, simplify, or security review. Use for smaller features, bug fixes, or tasks where requirements are already clear.
+description: Quick implementation workflow for simple features and fixes that don't need the full pipeline. Skips security review, edge case hardening, and simplification — explore, plan, implement, verify and done.
 argument-hint: <task description>
 ---
 
-# ship-simple — Streamlined Development Workflow
+# ship-simple — Quick Implementation Workflow
 
 **Task:** {{args}}
 
