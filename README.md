@@ -22,9 +22,7 @@ flowchart LR
 | [`/ship-fast`](skills/ship-fast/SKILL.md) | Quick implementation for simple features that don't need the full pipeline. No security review, edge cases, or simplify pass |
 | [`/edge-cases`](skills/edge-cases/SKILL.md) | Systematic edge case discovery and hardening. Spawns 8 parallel subagents across boundary, null, concurrency, auth, and other categories. Required by `/ship` Phase 6 |
 
-## Installation
-
-### skills.sh (recommended)
+## Quickstart
 
 ```bash
 npx skills add amajorai/ship.md
@@ -46,27 +44,6 @@ npx skills add amajorai/ship.md/skills/ship
 ```
 
 Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
-
-### install.sh (one-liner)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/amajorai/ship.md/main/install.sh | bash
-```
-
-```bash
-# Codex
-curl -fsSL https://raw.githubusercontent.com/amajorai/ship.md/main/install.sh | bash -s -- --codex
-```
-
-Or clone and run manually:
-
-```bash
-git clone https://github.com/amajorai/ship.md.git
-cd ship.md
-
-./install.sh           # Claude Code, copies to ~/.claude/skills/, invoke as /ship
-./install.sh --codex   # Codex, copies to ~/.codex/skills/, invoke as $ship
-```
 
 ## Built-in commands used
 
