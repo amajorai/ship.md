@@ -4,14 +4,14 @@ The end-to-end skill for shipping features without gaps. 9 phases from interview
 
 ```mermaid
 flowchart TD
-    A[Interview] --> B[Explore]
-    B --> C[Plan\n/model opusplan]
-    C --> D[Implement\n/batch]
-    D --> E[Verify\n/goal]
-    E --> F[Edge Cases]
-    F --> G[Simplify\n/goal]
-    G --> H[Security Review]
-    H --> I[Final Verify\n/goal]
+    A["🎤 Interview\nSurface requirements + acceptance criteria\nModel: Sonnet"] --> B["🔍 Explore\n3-5 parallel subagents map the codebase\nModel: Sonnet"]
+    B --> C["🧠 Plan\n/model opusplan\nModel: Opus"]
+    C --> D["⚡ Implement\n/batch — parallel isolated worktrees\nModel: Sonnet"]
+    D --> E["✅ Verify\n/goal — all acceptance criteria must pass\nModel: Sonnet"]
+    E --> F["🧪 Edge Cases\n8 parallel subagents across boundary categories\nModel: Sonnet"]
+    F --> G["✂️ Simplify\n/goal — no dead code or over-engineering\nModel: Sonnet"]
+    G --> H["🔒 Security Review\nsecurity-review skill — HIGH/CRITICAL fixed\nModel: Sonnet"]
+    H --> I["🏁 Final Verify\n/goal — clean deployable state confirmed\nModel: Sonnet"]
 ```
 
 ## Skills
