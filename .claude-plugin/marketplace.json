@@ -1,0 +1,13 @@
+{
+  "name": "shipmd",
+  "owner": {
+    "name": "Jia Wei Ng"
+  },
+  "plugins": [
+    {
+      "name": "shipmd",
+      "description": "End-to-end feature shipping workflow. Wraps /batch, /goal, and /model into quality-gated phases — no gaps from brief to deployed.",
+      "source": "."
+    }
+  ]
+}
