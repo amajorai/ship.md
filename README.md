@@ -20,6 +20,7 @@ flowchart TD
 |-------|-------------|
 | [`/ship`](skills/ship/SKILL.md) | Full 9-phase pipeline: interview, explore, plan, implement, verify, edge cases, simplify, security review, final verify |
 | [`/ship-fast`](skills/ship-fast/SKILL.md) | Quick implementation for simple features that don't need the full pipeline. No security review, edge cases, or simplify pass |
+| [`/edge-cases`](skills/edge-cases/SKILL.md) | Systematic edge case discovery and hardening. Spawns 8 parallel subagents across boundary, null, concurrency, auth, and other categories. Required by `/ship` Phase 6 |
 
 ## Installation
 
@@ -69,12 +70,13 @@ cd ship.md
 
 ## Built-in commands used
 
-`/ship` orchestrates these Claude Code built-ins. No external dependencies needed:
+`/ship` orchestrates these Claude Code built-ins and bundled skills:
 
 - `/model opusplan` — Opus for planning, auto-switches to Sonnet for execution
 - `/batch` — parallel implementation across isolated git worktrees
 - `/goal` — autonomous quality loops for verify, simplify, and security phases
 - `security-review` skill — built-in security audit
+- `/edge-cases` skill — bundled in this repo (Phase 6)
 
 ---
 
