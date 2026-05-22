@@ -1,13 +1,13 @@
 # ship.md
 
-The end-to-end skill for shipping features without gaps — 9 phases from interview to final verify. Wraps Claude Code's built-in `/batch`, `/goal`, and `/model` commands into a single quality-gated pipeline.
+The end-to-end skill for shipping features without gaps. 9 phases from interview to final verify. Wraps Claude Code's built-in `/batch`, `/goal`, and `/model` commands into a single quality-gated pipeline.
 
 ## Skills
 
 | Skill | What it does |
 |-------|-------------|
 | [`/ship`](skills/ship/SKILL.md) | Full 9-phase pipeline: interview, explore, plan, implement, verify, edge cases, simplify, security review, final verify |
-| [`/ship-simple`](skills/ship-simple/SKILL.md) | Quick implementation for simple features that don't need the full pipeline — no security review, edge cases, or simplify pass |
+| [`/ship-simple`](skills/ship-simple/SKILL.md) | Quick implementation for simple features that don't need the full pipeline. No security review, edge cases, or simplify pass |
 
 ## Installation
 
@@ -51,13 +51,13 @@ Or clone and run manually:
 git clone https://github.com/amajorai/ship.md.git
 cd ship.md
 
-./install.sh           # Claude Code → ~/.claude/skills/  → /ship
-./install.sh --codex   # Codex       → ~/.codex/skills/  → $ship
+./install.sh           # Claude Code, copies to ~/.claude/skills/, invoke as /ship
+./install.sh --codex   # Codex, copies to ~/.codex/skills/, invoke as $ship
 ```
 
 ## Built-in commands used
 
-`/ship` orchestrates these Claude Code built-ins — no external dependencies needed:
+`/ship` orchestrates these Claude Code built-ins. No external dependencies needed:
 
 - `/model opusplan` — Opus for planning, auto-switches to Sonnet for execution
 - `/batch` — parallel implementation across isolated git worktrees
@@ -66,4 +66,4 @@ cd ship.md
 
 ---
 
-Part of [amajorai/skills](https://github.com/amajorai/skills)
+Part of [amajorai/skills](https://github.com/amajorai/skills). For more skills check out the full collection.
