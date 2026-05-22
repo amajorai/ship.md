@@ -2,18 +2,6 @@
 
 The end-to-end skill for shipping features without gaps — 9 phases from interview to final verify. Wraps Claude Code's built-in `/batch`, `/goal`, and `/model` commands into a single quality-gated pipeline.
 
-```
-skills/
-  ship/
-    SKILL.md
-  ship-simple/
-    SKILL.md
-.claude-plugin/
-  plugin.json
-  marketplace.json
-install.sh
-```
-
 ## Skills
 
 | Skill | What it does |
