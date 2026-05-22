@@ -3,7 +3,7 @@
 The end-to-end skill for shipping features without gaps. 9 phases from interview to final verify. Wraps Claude Code's built-in `/batch`, `/goal`, and `/model` commands into a single quality-gated pipeline.
 
 ```mermaid
-flowchart TD
+flowchart LR
     A["🎤 Interview (Sonnet)\nSurface requirements + acceptance criteria"] --> B["🔍 Explore (Sonnet)\n3-5 parallel subagents map the codebase"]
     B --> C["🧠 Plan (Opus)\n/model opusplan"]
     C --> D["⚡ Implement (Sonnet)\n/batch — parallel isolated worktrees"]
