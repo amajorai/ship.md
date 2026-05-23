@@ -24,8 +24,9 @@ flowchart TD
 
 | Skill | What it does |
 |-------|-------------|
-| [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify |
+| [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify. Creates atomic GitHub issues per unit when `gh` + a GitHub remote are available |
 | [`/ship-fast`](skills/ship-fast/SKILL.md) | Quick implementation for simple features that don't need the full pipeline. No security review, edge cases, or simplify pass |
+| [`/ship-simple`](skills/ship-simple/SKILL.md) | Same full 10-phase pipeline as `/ship` with no GitHub issue tracking — use this when you don't want or need the `gh` integration |
 
 ### Optional Dependencies
 
@@ -57,7 +58,7 @@ Installs both skills and auto-configures them for whichever coding agents you ha
 
 ### Auto-Update
 
-`/ship` and `/ship-fast` run `npx skills update <name> -y` at the start of each invocation and update themselves if a new version is available, then ask you to re-run.
+All three skills run `npx skills update <name> -y` at the start of each invocation and update themselves if a new version is available, then ask you to re-run.
 
 `/ship` also checks whether its optional dependencies (`/edge-cases` and `/e2e`) are installed, and offers to fetch them from [amajorai/skills](https://github.com/amajorai/skills) if missing.
 
@@ -70,7 +71,7 @@ To opt out of auto-update, add `--no-update` to your command or set `SKILLS_AUTO
 /plugin install shipmd@amajorai
 ```
 
-Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
+Invoke as `/shipmd:ship <task>`, `/shipmd:ship-fast <task>`, or `/shipmd:ship-simple <task>`.
 
 ---
 
