@@ -35,12 +35,12 @@ flowchart TD
 
 `/ship` orchestrates these Claude Code built-ins and bundled skills:
 
-- `/model opusplan`: Opus for planning, auto-switches to Sonnet for execution
-- `/batch`: parallel implementation across isolated git worktrees
-- `/goal`: autonomous quality loops for verify, simplify, and security phases
-- `/security-review`: built-in security audit
-- `/edge-cases`: bundled in this repo (Phase 6)
-- `/e2e`: bundled in this repo (Phase 7)
+- `/model opusplan` - Opus for planning, auto-switches to Sonnet for execution
+- `/batch` - parallel implementation across isolated git worktrees
+- `/goal` - autonomous quality loops for verify, simplify, and security phases
+- `/security-review` - built-in security audit
+- `/edge-cases` - bundled in this repo (Phase 6)
+- `/e2e` - bundled in this repo (Phase 7)
 
 ## Quickstart
 
