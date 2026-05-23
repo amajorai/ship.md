@@ -11,7 +11,7 @@ argument-hint: <task description>
 
 ## Phase 1: Interview
 
-*Skip if `{{args}}` is already specific enough (clear scope, obvious acceptance criteria, no ambiguities) — jump straight to Phase 2.*
+*Skip if `{{args}}` is already specific enough (clear scope, obvious acceptance criteria, no ambiguities) - jump straight to Phase 2.*
 
 Ask the user in a single message:
 

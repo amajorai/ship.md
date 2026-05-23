@@ -28,7 +28,7 @@ Spawn **8 parallel subagents**, one per category. Each enumerates every edge cas
 | 7 | **State machine violations** | calling operations in wrong order, acting on deleted/expired/cancelled resources, re-entrancy |
 | 8 | **Auth & permission boundaries** | unauthenticated access, cross-tenant data leakage, privilege escalation, token expiry mid-request |
 
-Each subagent must read the relevant source files before enumerating — do not guess based on category alone.
+Each subagent must read the relevant source files before enumerating: do not guess based on category alone.
 
 
 ## Phase 2: Prioritize & Deduplicate
@@ -37,10 +37,10 @@ Consolidate all findings into a single master list:
 
 1. Deduplicate near-identical cases (keep the more specific one)
 2. Sort by **risk × likelihood**:
-   - **P0** — CRITICAL risk or near-certain to occur in production
-   - **P1** — HIGH risk, plausible in production
-   - **P2** — MEDIUM risk, possible but uncommon
-   - **P3** — LOW risk, theoretical
+   - **P0**: CRITICAL risk or near-certain to occur in production
+   - **P1**: HIGH risk, plausible in production
+   - **P2**: MEDIUM risk, possible but uncommon
+   - **P3**: LOW risk, theoretical
 
 Present the prioritized list to the user and confirm before writing any tests. Note which cases are already handled and which are unhandled gaps.
 
@@ -56,10 +56,10 @@ For each unhandled P0 and P1 case (and any P2/P3 cases the user flags):
 
 **Rules:**
 - Tests must be runnable without manual setup
-- Do not mock behavior that the real code exercises — only mock external I/O (network, DB, filesystem) if needed
+- Do not mock behavior that the real code exercises: only mock external I/O (network, DB, filesystem) if needed
 - Each test should assert the *correct* outcome, not just that no exception is thrown
 
-Run the tests immediately after writing them. A failing test is the goal for unhandled cases — it proves the gap is real.
+Run the tests immediately after writing them. A failing test is the goal for unhandled cases: it proves the gap is real.
 
 
 ## Phase 4: Harden
@@ -67,8 +67,8 @@ Run the tests immediately after writing them. A failing test is the goal for unh
 For every test that fails (unhandled edge case confirmed):
 
 1. Identify the minimal code change needed to handle it correctly
-2. Implement the fix — no speculative hardening beyond what the failing test requires
-3. Re-run the test — it must pass before moving on
+2. Implement the fix: no speculative hardening beyond what the failing test requires
+3. Re-run the test: it must pass before moving on
 4. Verify no existing tests regress after each fix
 
 Do not batch fixes. Fix → test → fix → test. One at a time.
@@ -82,7 +82,7 @@ Run the full test suite:
 bun test
 ```
 
-All tests — original and new — must pass. If any pre-existing test is now failing, treat it as a regression and fix it before proceeding.
+All tests: original and new: must pass. If any pre-existing test is now failing, treat it as a regression and fix it before proceeding.
 
 Summarize:
 - How many edge cases were found (by category and priority)
@@ -99,7 +99,7 @@ For any edge cases intentionally **not** handled (deferred P2/P3 or out-of-scope
 // Edge case not handled: <description>. Risk: LOW. Deferred because: <reason>.
 ```
 
-Do not write TODO comments for cases that are now handled — they just add noise.
+Do not write TODO comments for cases that are now handled: they just add noise.
 
 
 ## Completion Checklist

@@ -22,11 +22,11 @@ Spawn **3 parallel subagents** to map what needs testing:
 | 3 | **Existing tests** | Current E2E framework (Playwright, Maestro, Cypress, Detox, etc.), test structure, helper utilities, existing coverage gaps |
 
 Synthesize into:
-- **Platform** — web browser, iOS, Android, React Native, Flutter, or mixed
-- **Launch command** — how to start the app under test
-- **Base URL or App ID** — where to point the test runner
-- **Flow inventory** — numbered list of user flows to cover, with the UI elements involved
-- **Framework decision** — see below
+- **Platform**: web browser, iOS, Android, React Native, Flutter, or mixed
+- **Launch command**: how to start the app under test
+- **Base URL or App ID**: where to point the test runner
+- **Flow inventory**: numbered list of user flows to cover, with the UI elements involved
+- **Framework decision**: see below
 
 ### Framework Decision
 
@@ -38,7 +38,7 @@ If a framework already exists, use it. If not, choose based on platform:
 | iOS / Android (native) | **Maestro** | Native device automation, no code injection, framework-agnostic |
 | React Native | **Maestro** | Works at the UI layer, handles both iOS and Android with one flow |
 | Flutter | **Maestro** | Framework-agnostic UI automation, no SDK integration required |
-| Web + mobile | Ask the user — Playwright for web, Maestro for mobile, or Maestro for both (web support is beta) |
+| Web + mobile | Ask the user: Playwright for web, Maestro for mobile, or Maestro for both (web support is beta) |
 
 **Always confirm the framework choice with the user before setup.**
 
@@ -50,7 +50,7 @@ If a framework already exists, use it. If not, choose based on platform:
 1. Install: `bun add -d @playwright/test`
 2. Install browser: `bunx playwright install --with-deps chromium`
 3. Create a minimal `playwright.config.ts` following project conventions
-4. Add to `package.json`: `"test:e2e": "playwright test"`
+4. Add `"test:e2e": "playwright test"` to `package.json`
 5. Verify: empty test suite passes
 
 ### Maestro (mobile / React Native / Flutter)
@@ -71,12 +71,12 @@ If a framework already exists, read its config and confirm the test directory an
 
 For the target area, define test scenarios at two levels:
 
-**Golden path** — the happy path a user follows when everything works:
+**Golden path**: the happy path a user follows when everything works:
 - List each step as a user action (tap, type, swipe, navigate, submit)
 - Define the expected outcome after each step
 - One scenario per major flow
 
-**Critical edge cases** — the failures a user will actually hit:
+**Critical edge cases**: the failures a user will actually hit:
 - Empty states (no data, first use)
 - Validation errors (bad input, required fields)
 - Auth boundaries (logged out, wrong role)
@@ -90,17 +90,17 @@ Present the scenario list to the user and confirm scope before writing any tests
 
 ### Playwright tests (TypeScript)
 
-1. Read similar existing tests first — match their style, helpers, and assertions exactly
+1. Read similar existing tests first: match their style, helpers, and assertions exactly
 2. Use the Page Object pattern if the project already uses it; otherwise write direct locator calls
 3. Use **semantic selectors** in priority order:
-   - `getByRole` / `getByLabel` / `getByText` (prefer — match what users see)
+   - `getByRole` / `getByLabel` / `getByText` (prefer: match what users see)
    - `data-testid` attributes (add them to the source if needed)
    - CSS selectors only as a last resort
-4. Assert the **visible outcome** the user would notice — page content, URL, toast message, element state
+4. Assert the **visible outcome** the user would notice: page content, URL, toast message, element state
 5. Never assert implementation details (Redux state, internal API calls, class names)
 
 **Rules:**
-- Each test must be independent — no shared state between tests
+- Each test must be independent: no shared state between tests
 - Flaky assertions must use `waitFor` or explicit waits, never `sleep`
 - If a `data-testid` is missing from the UI, add it to the source file in the same PR
 
@@ -122,12 +122,12 @@ Present the scenario list to the user and confirm scope before writing any tests
    - assertVisible: "Welcome back"
    ```
 4. Key commands: `tapOn`, `inputText`, `scrollUntilVisible`, `assertVisible`, `assertNotVisible`, `back`, `takeScreenshot`, `swipe`
-5. For environment-specific values use `--env`: `${APP_URL}`, `${TEST_USER}`
-6. Assert **visible text or element presence** — never internal state
+5. For environment-specific values, pass them with `--env`: `${APP_URL}`, `${TEST_USER}`
+6. Assert **visible text or element presence**: never internal state
 
 **Rules:**
 - Each flow must be runnable in isolation (`clearState: true` on launch)
-- No fixed waits — Maestro handles timing automatically; use `assertVisible` as the sync point
+- No fixed waits: Maestro handles timing automatically; use `assertVisible` as the sync point
 - If an element has no stable text or ID, add a `testID` to the source and target it with `{ id: "..." }`
 
 Run every flow immediately after writing it. A passing golden-path flow is the baseline.
@@ -137,13 +137,13 @@ Run every flow immediately after writing it. A passing golden-path flow is the b
 
 For every failing test or flow:
 
-1. Read the error output carefully — distinguish selector mismatch, timing issue, and actual behavior bug
-2. **Selector mismatch** — fix the locator or add a `data-testid` / `testID` to the source
-3. **Timing issue** (Playwright) — replace fixed waits with `waitFor` targeting a visible element or network idle
-4. **Element not found** (Maestro) — use `maestro hierarchy` to inspect the current screen state and confirm the element ID or text
-5. **Actual bug found** — real find. Report it to the user before deciding whether to fix the app or mark the test as known-failing with a TODO
+1. Read the error output carefully: distinguish selector mismatch, timing issue, and actual behavior bug
+2. **Selector mismatch**: fix the locator or add a `data-testid` / `testID` to the source
+3. **Timing issue** (Playwright): replace fixed waits with `waitFor` targeting a visible element or network idle
+4. **Element not found** (Maestro): use `maestro hierarchy` to inspect the current screen state and confirm the element ID or text
+5. **Actual bug found**: real find. Report it to the user before deciding whether to fix the app or mark the test as known-failing with a TODO
 
-Do not modify assertions to make tests pass — assertions represent the correct expected behavior.
+Do not modify assertions to make tests pass: assertions represent the correct expected behavior.
 
 Fix → run → fix → run. One failure at a time.
 
@@ -179,6 +179,6 @@ Report:
 - [ ] Golden path test written and passing for each major flow
 - [ ] Critical edge cases covered with dedicated tests
 - [ ] All tests use semantic selectors or `data-testid` / `testID`
-- [ ] No flaky waits — Playwright uses `waitFor`; Maestro uses `assertVisible` as sync
+- [ ] No flaky waits: Playwright uses `waitFor`; Maestro uses `assertVisible` as sync
 - [ ] Full E2E suite passes with no regressions
 - [ ] Any app bugs found are reported to the user
