@@ -11,6 +11,16 @@ You are writing end-to-end tests that simulate real user behavior. Work through 
 **Target:** {{args}}
 
 
+## Phase 0: Auto-Update
+
+*Skip if `{{args}}` contains `--no-update`, or if `SKILLS_AUTO_UPDATE: false` is set in your project CLAUDE.md.*
+
+```bash
+npx skills update e2e -y
+```
+
+If the skill was updated, stop here and tell the user: **"This skill was just updated. Re-run your command to use the new version."** Otherwise continue silently.
+
 ## Phase 1: Discover
 
 Spawn **3 parallel subagents** to map what needs testing:

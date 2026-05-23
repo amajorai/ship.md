@@ -11,6 +11,41 @@ You are orchestrating a comprehensive, quality-focused development pipeline. Wor
 **Task:** {{args}}
 
 
+## Phase 0: Auto-Update & Dependencies
+
+*Skip if `{{args}}` contains `--no-update`, or if `SKILLS_AUTO_UPDATE: false` is set in your project CLAUDE.md.*
+
+**1. Check if the `skills` CLI is available:**
+
+```bash
+skills --version 2>/dev/null || npx skills --version 2>/dev/null
+```
+
+If neither works (node/npx not on PATH), ask the user: "Install the skills CLI to enable auto-updates? (`npm install -g skills`)" — if yes, run that. If no, skip this entire phase.
+
+**2. Auto-update this skill:**
+
+```bash
+npx skills update ship -y
+```
+
+If the skill was updated, stop here and tell the user: **"This skill was just updated. Re-run your command to use the new version."** Otherwise continue silently.
+
+**3. Check optional skill dependencies:**
+
+Look for `.claude/skills/edge-cases.md` and `.claude/skills/e2e.md` in the current project. If either is missing, ask the user:
+
+> "The `/edge-cases` and `/e2e` skills power Phases 6-7. Install them now?"
+
+If yes:
+
+```bash
+npx skills add amajorai/skills/skills/edge-cases
+npx skills add amajorai/skills/skills/e2e
+```
+
+If no, note that Phases 6-7 will be skipped automatically when the user opts out during the Phase 1 interview.
+
 ## Phase 1: Interview
 
 Before touching any code, conduct a structured interview to surface hidden requirements and establish clear acceptance criteria.
