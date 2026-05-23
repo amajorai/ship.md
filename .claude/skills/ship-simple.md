@@ -1,1 +1,0 @@
-../../skills/ship-simple/SKILL.md

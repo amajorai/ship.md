@@ -57,15 +57,16 @@ Ask the user about (combine related questions, don't fire them one by one):
 - **Constraints**: Performance requirements, backwards compatibility, existing patterns to follow, team conventions?
 - **Ambiguities**: Unclear terms, conflicting requirements, or edge cases in the task description?
 - **Quality gates**: Which hardening phases do you want after implementation? Options: edge cases (`/edge-cases`), E2E tests (`/e2e`), both, or neither. Default: both.
+- **GitHub issues**: Do you want to track this work with GitHub issues? (one atomic issue per implementation unit, closed by each agent on completion)
 
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
 
 ## Phase 1.5: GitHub Prerequisites Check
 
-*Skip this entire phase if any of the following is true: `gh` is not installed, the user is not authenticated with `gh`, or the repo has no GitHub remote.*
+*Skip entirely if the user opted out of GitHub issues in Phase 1.*
 
-Run both — if either fails, set `SHIP_GH_ENABLED=false` and skip all GitHub steps in later phases:
+Run both — if either fails, set `SHIP_GH_ENABLED=false`, tell the user why (not installed / not authenticated / no GitHub remote), and continue without issue tracking:
 
 ```bash
 gh auth status 2>/dev/null && gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null
