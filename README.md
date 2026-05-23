@@ -1,6 +1,6 @@
 # 📦 ship.md
 
-The end-to-end skill for shipping features without gaps. Up to 10 phases from interview to final verify. Wraps Claude Code's built-in `/batch`, `/goal`, and `/model` commands into a single quality-gated pipeline.
+The end-to-end skill for shipping features without gaps. Up to 10 phases from interview to final verify. Works with Claude Code and Codex — wraps built-in `/batch`, `/goal`, and `/model` commands into a single quality-gated pipeline, with Codex fallbacks for each phase.
 
 ```mermaid
 flowchart TD
@@ -20,21 +20,10 @@ flowchart TD
 
 ## Skills
 
-### Core
-
 | Skill | What it does |
 |-------|-------------|
 | [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify. Optionally creates atomic GitHub issues per unit (asked during interview) |
 | [`/ship-fast`](skills/ship-fast/SKILL.md) | Quick implementation for simple features that don't need the full pipeline. No security review, edge cases, or simplify pass |
-
-### Optional Dependencies
-
-`/ship` Phases 6–7 use `/edge-cases` and `/e2e` from [amajorai/skills](https://github.com/amajorai/skills). `/ship` Phase 0 checks whether they are installed and offers to fetch them automatically if not.
-
-| Skill | Source | What it does |
-|-------|--------|-------------|
-| [`/edge-cases`](https://github.com/amajorai/skills/tree/main/skills/edge-cases) | amajorai/skills | Systematic edge case discovery and hardening. Spawns 8 parallel subagents across boundary, null, concurrency, auth, and other categories |
-| [`/e2e`](https://github.com/amajorai/skills/tree/main/skills/e2e) | amajorai/skills | End-to-end test authoring with Playwright (web) or Maestro (mobile/React Native/Flutter). Golden path + critical edge cases |
 
 ## Built-in commands used
 

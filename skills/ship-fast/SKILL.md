@@ -42,6 +42,10 @@ Ask the user in a single message (combine all questions):
 - **Acceptance criteria**: What does done look like? How will we verify correctness?
 - **Constraints**: Performance requirements, backwards compatibility, existing patterns to follow, team conventions?
 - **Ambiguities**: Unclear terms, conflicting requirements, or edge cases in the task description?
+- **Implementation strategy**: How should Phase 4 run parallel units?
+  - **(Recommended) Parallel subagents, shared workspace** — fastest; agents work concurrently on the same working tree with no overhead. Works for most tasks where units touch different files.
+  - **Let the agent decide** — agent evaluates the plan at implementation time and picks the right strategy based on file overlap and unit size.
+  - **Isolated worktrees / `/batch`** — each unit gets its own git worktree and produces a separate PR. Use only when units conflict on the same files or separate PRs are explicitly required.
 
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
@@ -78,14 +82,11 @@ Do not begin implementation until the user explicitly approves the plan.
 
 ## Phase 4: Implement
 
-Decompose the approved plan into **independent units** and execute them as **parallel subagents**. This is the default — no worktrees, no batch, just concurrent agents working on non-overlapping files.
+Decompose the approved plan into **independent units** and execute in parallel using the strategy chosen in Phase 1:
 
-Only reach for `isolation: "worktree"` when a unit genuinely needs it:
-- Two or more units modify the same files in incompatible ways
-- A unit is a large, self-contained refactor that would create noisy partial state for other agents running concurrently
-- Separate PRs per unit are explicitly required
-
-When in doubt, skip isolation. Parallel agents on separate files don't conflict, and resolving the occasional merge is faster than worktree overhead.
+- **Parallel subagents, shared workspace** *(recommended)*: spawn concurrent subagents on the same working tree, no worktrees. Fastest path — use when units touch different files.
+- **Let the agent decide**: review the plan now and pick the right strategy. Default to shared workspace; switch to worktrees only if two or more units modify the same files incompatibly or a unit is a large isolated refactor that would create noisy partial state.
+- **Isolated worktrees / `/batch`**: run `/batch` (creates one PR per unit) or spawn agents with `isolation: "worktree"`. Use only when units conflict on the same files or separate PRs are required.
 
 Wait for all units to complete before moving to verification.
 

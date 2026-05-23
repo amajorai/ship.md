@@ -58,6 +58,10 @@ Ask the user about (combine related questions, don't fire them one by one):
 - **Ambiguities**: Unclear terms, conflicting requirements, or edge cases in the task description?
 - **Quality gates**: Which hardening phases do you want after implementation? Options: edge cases (`/edge-cases`), E2E tests (`/e2e`), both, or neither. Default: both.
 - **GitHub issues**: Do you want to track this work with GitHub issues? (one atomic issue per implementation unit, closed by each agent on completion)
+- **Implementation strategy**: How should Phase 4 run parallel units?
+  - **(Recommended) Parallel subagents, shared workspace** — fastest; agents work concurrently on the same working tree with no overhead. Works for most tasks where units touch different files.
+  - **Let the agent decide** — agent evaluates the plan at implementation time and picks the right strategy based on file overlap and unit size.
+  - **Isolated worktrees / `/batch`** — each unit gets its own git worktree and produces a separate PR. Use only when units conflict on the same files or separate PRs are explicitly required.
 
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
@@ -129,14 +133,11 @@ Create all issues with `gh issue create`, collect their URLs and numbers, and te
 
 ## Phase 4: Implement
 
-Decompose the approved plan into **independent units** and execute them as **parallel subagents**. This is the default — no worktrees, no batch, just concurrent agents working on non-overlapping files.
+Decompose the approved plan into **independent units** and execute in parallel using the strategy chosen in Phase 1:
 
-Only reach for `isolation: "worktree"` (or `/batch` for separate PRs) when a unit genuinely needs it:
-- Two or more units modify the same files in incompatible ways
-- A unit is a large, self-contained refactor that would create noisy partial state for other agents running concurrently
-- Separate PRs per unit are explicitly required
-
-When in doubt, skip isolation. Parallel agents on separate files don't conflict, and resolving the occasional merge is faster than worktree overhead.
+- **Parallel subagents, shared workspace** *(recommended)*: spawn concurrent subagents on the same working tree, no worktrees. Fastest path — use when units touch different files.
+- **Let the agent decide**: review the plan now and pick the right strategy. Default to shared workspace; switch to worktrees only if two or more units modify the same files incompatibly or a unit is a large isolated refactor that would create noisy partial state.
+- **Isolated worktrees / `/batch`**: run `/batch` (creates one PR per unit) or spawn agents with `isolation: "worktree"`. Use only when units conflict on the same files or separate PRs are required.
 
 Each agent's prompt must include its assigned issue URL (if `SHIP_GH_ENABLED=true`):
 
