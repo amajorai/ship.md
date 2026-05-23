@@ -1,4 +1,4 @@
-# ship.md
+# 📦 ship.md
 
 The end-to-end skill for shipping features without gaps. Up to 10 phases from interview to final verify. Wraps Claude Code's built-in `/batch`, `/goal`, and `/model` commands into a single quality-gated pipeline.
 
