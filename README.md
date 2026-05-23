@@ -50,12 +50,6 @@ npx skills add amajorai/ship.md
 
 Installs both skills and auto-configures them for whichever coding agents you have installed (Claude Code, Codex, Cursor, and 50+ others).
 
-Install a single skill:
-
-```bash
-npx skills add amajorai/ship.md/skills/ship
-```
-
 ### Claude Code plugin
 
 ```
