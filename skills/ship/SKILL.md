@@ -1,10 +1,10 @@
 ---
 name: ship
-description: Full-cycle development workflow for any non-trivial feature or fix. Runs up to 10 phases — interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify — using the strongest available model for planning and autonomous goal loops for quality gates. Use when asked to implement a feature, fix a bug, or ship something with full quality assurance.
+description: Full-cycle development workflow for any non-trivial feature or fix. Runs up to 10 phases, interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify, using the strongest available model for planning and autonomous goal loops for quality gates. Use when asked to implement a feature, fix a bug, or ship something with full quality assurance.
 argument-hint: <task description>
 ---
 
-# ship — Full-Cycle Development Workflow
+# Ship
 
 You are orchestrating a comprehensive, quality-focused development pipeline. Work through each phase in order. Do not skip or merge phases.
 
@@ -15,7 +15,7 @@ You are orchestrating a comprehensive, quality-focused development pipeline. Wor
 
 Before touching any code, conduct a structured interview to surface hidden requirements and establish clear acceptance criteria.
 
-Ask the user about (combine related questions — don't fire them one by one):
+Ask the user about (combine related questions, don't fire them one by one):
 
 - **Scope**: Which files, modules, or systems are in scope? What is explicitly out of scope?
 - **Acceptance criteria**: What does done look like? How will we verify correctness?
@@ -30,11 +30,11 @@ Do not proceed until you have enough information to write unambiguous acceptance
 
 Spawn **3–5 parallel subagents** to map the codebase. Each covers a distinct area:
 
-- **Data / schema layer** — models, types, database schema, migrations
-- **Feature area** — the code most directly relevant to the task
-- **Tests and patterns** — how similar things are tested and implemented elsewhere
-- **Dependencies and integrations** — what the affected code connects to upstream and downstream
-- **Config / infrastructure** — only if the task touches deployment, environment, or build
+- **Data / schema layer**, models, types, database schema, migrations
+- **Feature area**, the code most directly relevant to the task
+- **Tests and patterns**, how similar things are tested and implemented elsewhere
+- **Dependencies and integrations**, what the affected code connects to upstream and downstream
+- **Config / infrastructure**, only if the task touches deployment, environment, or build
 
 Each subagent returns: what it found, what's relevant, and any risks or surprises.
 
@@ -44,14 +44,14 @@ Synthesize findings into a single **Context Summary**: current state, key constr
 ## Phase 3: Plan
 
 Switch to the strongest available reasoning model:
-- **Claude Code:** `/model opusplan` — runs Opus for planning, auto-switches to Sonnet for execution
+- **Claude Code:** `/model opusplan`, runs Opus for planning, auto-switches to Sonnet for execution
 - **Codex:** `/model o3`, then `/plan`
 
 The plan must specify:
 1. Exact files to create or modify (with line-level specificity where possible)
 2. Implementation order respecting the dependency graph
 3. How each acceptance criterion from Phase 1 will be satisfied
-4. Test strategy — new tests to write, existing tests to update
+4. Test strategy, new tests to write, existing tests to update
 
 Do not begin implementation until the user explicitly approves the plan.
 
@@ -60,7 +60,7 @@ Do not begin implementation until the user explicitly approves the plan.
 
 Decompose the approved plan into **independent units** and execute in parallel:
 
-- **Claude Code:** Run `/batch` — it creates isolated git worktrees and opens one PR per unit. If `/batch` is unavailable, spawn parallel agents with `isolation: "worktree"`.
+- **Claude Code:** Run `/batch`, it creates isolated git worktrees and opens one PR per unit. If `/batch` is unavailable, spawn parallel agents with `isolation: "worktree"`.
 - **Codex:** Spawn parallel subagents, one per unit. Assign non-overlapping files where possible. Resolve conflicts before proceeding.
 
 Wait for all units to complete before moving to quality gates.
@@ -115,7 +115,7 @@ Run `/goal` with this condition:
 All code added or modified for this task is as simple as possible. No unnecessary abstractions, dead code, over-engineered patterns, or speculative generality. Every line serves a concrete current requirement. All existing tests still pass.
 ```
 
-Do not accept simplifications that break correctness — `/goal` will keep iterating until tests pass.
+Do not accept simplifications that break correctness, `/goal` will keep iterating until tests pass.
 
 
 ## Phase 9: Security Review
@@ -124,7 +124,7 @@ Do not accept simplifications that break correctness — `/goal` will keep itera
 - **Codex / fallback:** Run `/goal` with this condition:
 
 ```
-All changes have been audited for: (1) input validation at system boundaries; (2) authentication and authorization on new endpoints; (3) no injection vulnerabilities — SQL, XSS, command injection, path traversal; (4) no hardcoded secrets or tokens; (5) intentional and documented trust boundary crossings. All HIGH and CRITICAL findings are fixed.
+All changes have been audited for: (1) input validation at system boundaries; (2) authentication and authorization on new endpoints; (3) no injection vulnerabilities, SQL, XSS, command injection, path traversal; (4) no hardcoded secrets or tokens; (5) intentional and documented trust boundary crossings. All HIGH and CRITICAL findings are fixed.
 ```
 
 Document any accepted LOW or MEDIUM findings with explicit rationale before proceeding.
