@@ -45,7 +45,7 @@ Ask the user in a single message (combine all questions):
 - **Implementation strategy**: How should Phase 4 run parallel units?
   - **(Recommended) Parallel subagents, shared workspace** — fastest; agents work concurrently on the same working tree with no overhead. Works for most tasks where units touch different files.
   - **Let the agent decide** — agent evaluates the plan at implementation time and picks the right strategy based on file overlap and unit size.
-  - **Isolated worktrees / `/batch`** — each unit gets its own git worktree and produces a separate PR. Use only when units conflict on the same files or separate PRs are explicitly required.
+  - **Isolated worktrees** — each unit gets its own git worktree and produces a separate PR. Use only when units conflict on the same files or separate PRs are explicitly required.
 
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
@@ -69,7 +69,7 @@ Synthesize findings into a single **Context Summary**: current state, key constr
 
 Call the `EnterPlanMode` tool to switch into plan mode. This displays the plan to the user in the dedicated plan UI and uses the strongest available model for reasoning.
 
-If `EnterPlanMode` is unavailable (Codex or other agents): switch to the strongest reasoning model available (`/model o3` or equivalent) and present the plan as a structured markdown block.
+If `EnterPlanMode` is unavailable (Codex or other agents): switch to the strongest reasoning model available and present the plan as a structured markdown block.
 
 The plan must specify:
 1. Exact files to create or modify (with line-level specificity where possible)
@@ -77,29 +77,29 @@ The plan must specify:
 3. How each acceptance criterion from Phase 1 will be satisfied
 4. Test strategy: new tests to write, existing tests to update
 
-Do not begin implementation until the user explicitly approves the plan.
+Do not begin implementation until the user explicitly approves the plan. Call `ExitPlanMode` once the user approves to return to normal execution mode.
 
 
 ## Phase 4: Implement
 
 Decompose the approved plan into **independent units** and execute in parallel using the strategy chosen in Phase 1:
 
-- **Parallel subagents, shared workspace** *(recommended)*: spawn concurrent subagents on the same working tree, no worktrees. Fastest path — use when units touch different files.
-- **Let the agent decide**: review the plan now and pick the right strategy. Default to shared workspace; switch to worktrees only if two or more units modify the same files incompatibly or a unit is a large isolated refactor that would create noisy partial state.
-- **Isolated worktrees / `/batch`**: run `/batch` (creates one PR per unit) or spawn agents with `isolation: "worktree"`. Use only when units conflict on the same files or separate PRs are required.
+- **Parallel subagents, shared workspace** *(recommended)*: spawn concurrent subagents using the `Agent` tool on the same working tree. Fastest path — use when units touch different files.
+- **Let the agent decide**: review the plan now and pick the right strategy. Default to shared workspace; switch to isolated worktrees only if two or more units modify the same files incompatibly or a unit is a large isolated refactor that would create noisy partial state.
+- **Isolated worktrees**: spawn agents using the `Agent` tool with `isolation: "worktree"`. Each agent works in its own git worktree. Create PRs after each completes with `gh pr create`.
 
 Wait for all units to complete before moving to verification.
 
 
 ## Phase 5: Verify
 
-Run `/goal` with this condition (adapt to the specific task):
+Spawn an autonomous `Agent` with the following goal condition (adapt to the specific task). Instruct it to iterate — running tests, fixing failures, re-checking criteria — until everything passes, then return its result:
 
 ```
 All acceptance criteria from Phase 1 are met. All existing tests pass. No linting errors or type errors. The feature works end-to-end including edge cases defined during Phase 1.
 ```
 
-**Claude Code fallback:** If `/goal` is unavailable, invoke the built-in `verify` skill and spawn Opus agents to validate each criterion manually.
+If spawning an agent is not suitable, invoke the `verify` skill using the `Skill` tool: `Skill({skill: "verify"})`.
 
 Do not proceed until every criterion passes.
 
