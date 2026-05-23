@@ -4,10 +4,12 @@ The end-to-end skill for shipping features without gaps. Up to 10 phases from in
 
 ```mermaid
 flowchart TD
-    A["🎤 Interview (Sonnet)\nSurface requirements + quality gates"] --> B["🔍 Explore (Sonnet)\n3-5 parallel subagents map the codebase"]
-    B --> C["🧠 Plan (Opus)\n/model opusplan"]
-    C --> D["⚡ Implement (Sonnet)\n/batch: parallel isolated worktrees"]
-    D --> E["✅ Verify (Sonnet)\n/goal: all acceptance criteria must pass"]
+    subgraph sf["⚡ /ship-fast"]
+        A["🎤 Interview (Sonnet)\nSurface requirements + quality gates"] --> B["🔍 Explore (Sonnet)\n3-5 parallel subagents map the codebase"]
+        B --> C["🧠 Plan (Opus)\n/model opusplan"]
+        C --> D["⚡ Implement (Sonnet)\n/batch: parallel isolated worktrees"]
+        D --> E["✅ Verify (Sonnet)\n/goal: all acceptance criteria must pass"]
+    end
     E --> H["✂️ Simplify (Sonnet)\n/goal: no dead code or over-engineering"]
     E -.-> F["🧪 Edge Cases (Sonnet)\n8 parallel subagents across boundary categories"]
     F -.-> G["🌐 E2E Tests (Sonnet)\nPlaywright or Maestro: golden path + edge cases"]
