@@ -31,6 +31,17 @@ flowchart TD
 | [`/edge-cases`](skills/edge-cases/SKILL.md) | Systematic edge case discovery and hardening. Spawns 8 parallel subagents across boundary, null, concurrency, auth, and other categories. Opted in during `/ship` Phase 1 |
 | [`/e2e`](skills/e2e/SKILL.md) | End-to-end test authoring with Playwright (web) or Maestro (mobile/React Native/Flutter). Golden path + critical edge cases. Opted in during `/ship` Phase 1 |
 
+## Built-in commands used
+
+`/ship` orchestrates these Claude Code built-ins and bundled skills:
+
+- `/model opusplan` — Opus for planning, auto-switches to Sonnet for execution
+- `/batch` — parallel implementation across isolated git worktrees
+- `/goal` — autonomous quality loops for verify, simplify, and security phases
+- `/security-review` — built-in security audit
+- `/edge-cases` — bundled in this repo (Phase 6)
+- `/e2e` — bundled in this repo (Phase 7)
+
 ## Quickstart
 
 ```bash
@@ -53,17 +64,6 @@ npx skills add amajorai/ship.md/skills/ship
 ```
 
 Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
-
-## Built-in commands used
-
-`/ship` orchestrates these Claude Code built-ins and bundled skills:
-
-- `/model opusplan` — Opus for planning, auto-switches to Sonnet for execution
-- `/batch` — parallel implementation across isolated git worktrees
-- `/goal` — autonomous quality loops for verify, simplify, and security phases
-- `/security-review` — built-in security audit
-- `/edge-cases` — bundled in this repo (Phase 6)
-- `/e2e` — bundled in this repo (Phase 7)
 
 ---
 
