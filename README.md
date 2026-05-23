@@ -8,9 +8,10 @@ flowchart TD
     B --> C["🧠 Plan (Opus)\n/model opusplan"]
     C --> D["⚡ Implement (Sonnet)\n/batch: parallel isolated worktrees"]
     D --> E["✅ Verify (Sonnet)\n/goal: all acceptance criteria must pass"]
+    E --> H["✂️ Simplify (Sonnet)\n/goal: no dead code or over-engineering"]
     E -.-> F["🧪 Edge Cases (Sonnet)\n8 parallel subagents across boundary categories"]
     F -.-> G["🌐 E2E Tests (Sonnet)\nPlaywright or Maestro: golden path + edge cases"]
-    G --> H["✂️ Simplify (Sonnet)\n/goal: no dead code or over-engineering"]
+    G -.-> H
     H --> I["🔒 Security Review (Sonnet)\n/security-review: HIGH/CRITICAL fixed"]
     I --> J["🏁 Final Verify (Sonnet)\n/goal: clean deployable state confirmed"]
 ```
