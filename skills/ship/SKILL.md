@@ -96,9 +96,9 @@ Synthesize findings into a single **Context Summary**: current state, key constr
 
 ## Phase 3: Plan
 
-Switch to the strongest available reasoning model:
-- **Claude Code:** `/model opusplan` - runs Opus for planning, auto-switches to Sonnet for execution
-- **Codex:** `/model o3`, then `/plan`
+Call the `EnterPlanMode` tool to switch into plan mode. This displays the plan to the user in the dedicated plan UI and uses the strongest available model for reasoning.
+
+If `EnterPlanMode` is unavailable (Codex or other agents): switch to the strongest reasoning model available (`/model o3` or equivalent) and present the plan as a structured markdown block.
 
 The plan must specify:
 1. Exact files to create or modify (with line-level specificity where possible)
