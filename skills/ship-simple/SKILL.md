@@ -1,10 +1,10 @@
 ---
-name: ship
-description: Full-cycle development workflow for any non-trivial feature or fix. Runs up to 10 phases (interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify) using the strongest available model for planning and autonomous goal loops for quality gates. Use when asked to implement a feature, fix a bug, or ship something with full quality assurance.
+name: ship-simple
+description: Full-cycle development workflow without GitHub issue tracking. Runs up to 10 phases (interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify) using the strongest available model for planning and autonomous goal loops for quality gates.
 argument-hint: <task description>
 ---
 
-# Ship
+# Ship Simple
 
 You are orchestrating a comprehensive, quality-focused development pipeline. Work through each phase in order. Do not skip or merge phases.
 
@@ -26,7 +26,7 @@ If neither works (node/npx not on PATH), ask the user: "Install the skills CLI t
 **2. Auto-update this skill:**
 
 ```bash
-npx skills update ship -y
+npx skills update ship-simple -y
 ```
 
 If the skill was updated, stop here and tell the user: **"This skill was just updated. Re-run your command to use the new version."** Otherwise continue silently.
@@ -61,19 +61,6 @@ Ask the user about (combine related questions, don't fire them one by one):
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
 
-## Phase 1.5: GitHub Prerequisites Check
-
-*Skip this entire phase if any of the following is true: `gh` is not installed, the user is not authenticated with `gh`, or the repo has no GitHub remote.*
-
-Run both — if either fails, set `SHIP_GH_ENABLED=false` and skip all GitHub steps in later phases:
-
-```bash
-gh auth status 2>/dev/null && gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null
-```
-
-If both succeed, set `SHIP_GH_ENABLED=true`. No issues are created yet — that happens in Phase 3 once work is decomposed into atomic units.
-
-
 ## Phase 2: Explore
 
 Spawn **3–5 parallel subagents** to map the codebase. Each covers a distinct area:
@@ -103,28 +90,6 @@ The plan must specify:
 
 Do not begin implementation until the user explicitly approves the plan.
 
-**If `SHIP_GH_ENABLED=true`**, after the user approves the plan, create one GitHub issue per atomic implementation unit. Each issue must be self-contained — an agent reading only the issue should have everything it needs. Use this template:
-
-```
-## Task
-<what specifically needs to be done — one atomic, independently shippable change>
-
-## Context
-<why this is needed; what it connects to; relevant file paths, patterns, or constraints surfaced during Phase 2 exploration>
-
-## Acceptance Criteria
-- [ ] <specific, verifiable criterion>
-- [ ] <specific, verifiable criterion>
-
-## Dependencies
-<list other issue numbers this unit depends on, or "none">
-
-## Notes
-<gotchas, patterns to follow, edge cases to watch for>
-```
-
-Create all issues with `gh issue create`, collect their URLs and numbers, and tell the user the full list. Label issues consistently (e.g. `--label "ship"`) if the label exists.
-
 
 ## Phase 4: Implement
 
@@ -136,12 +101,6 @@ Only reach for `isolation: "worktree"` (or `/batch` for separate PRs) when a uni
 - Separate PRs per unit are explicitly required
 
 When in doubt, skip isolation. Parallel agents on separate files don't conflict, and resolving the occasional merge is faster than worktree overhead.
-
-Each agent's prompt must include its assigned issue URL (if `SHIP_GH_ENABLED=true`):
-
-> "Your task is fully specified in this GitHub issue: `<issue URL>`. Read the Task, Context, Acceptance Criteria, and Notes before writing any code. When all acceptance criteria are satisfied and your changes are committed, close the issue: `gh issue close <number> --reason completed`"
-
-Agents are responsible for closing their own issue on completion. Do not wait until the end of the pipeline.
 
 Wait for all units to complete before moving to quality gates.
 
@@ -230,15 +189,3 @@ Repeat Phase 5. Confirm the codebase is shippable after hardening, simplificatio
 - Test coverage added or modified
 - Security findings and their resolutions
 - Any open limitations or recommended follow-up tasks
-
-**If `SHIP_GH_ENABLED=true`**, verify all issues created in Phase 3 are closed:
-
-```bash
-gh issue list --label "ship" --state open
-```
-
-For any still open, close them with a note explaining why (e.g. merged into another unit, superseded, or deferred):
-
-```bash
-gh issue close <number> --comment "<reason>" --reason "not planned"
-```

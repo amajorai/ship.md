@@ -6,6 +6,8 @@ argument-hint: <task description>
 
 # Ship Fast
 
+You are orchestrating a focused, quality-conscious development pipeline. Work through each phase in order.
+
 **Task:** {{args}}
 
 
@@ -13,62 +15,96 @@ argument-hint: <task description>
 
 *Skip if `{{args}}` contains `--no-update`, or if `SKILLS_AUTO_UPDATE: false` is set in your project CLAUDE.md.*
 
+**1. Check if the `skills` CLI is available:**
+
+```bash
+skills --version 2>/dev/null || npx skills --version 2>/dev/null
+```
+
+If neither works (node/npx not on PATH), ask the user: "Install the skills CLI to enable auto-updates? (`npm install -g skills`)" — if yes, run that. If no, skip this entire phase.
+
+**2. Auto-update this skill:**
+
 ```bash
 npx skills update ship-fast -y
 ```
 
 If the skill was updated, stop here and tell the user: **"This skill was just updated. Re-run your command to use the new version."** Otherwise continue silently.
 
+
 ## Phase 1: Interview
 
-*Skip if `{{args}}` is already specific enough (clear scope, obvious acceptance criteria, no ambiguities) - jump straight to Phase 2.*
+*Skip if `{{args}}` is already specific enough — clear scope, obvious acceptance criteria, no ambiguities. Jump straight to Phase 2.*
 
-Ask the user in a single message:
+Ask the user in a single message (combine all questions):
 
-- **Scope**: Which files or systems are in scope? What is explicitly out of scope?
-- **Done looks like**: What does correct behavior look like? How will we verify it?
-- **Constraints**: Any patterns to follow, performance requirements, or backwards compatibility concerns?
+- **Scope**: Which files, modules, or systems are in scope? What is explicitly out of scope?
+- **Acceptance criteria**: What does done look like? How will we verify correctness?
+- **Constraints**: Performance requirements, backwards compatibility, existing patterns to follow, team conventions?
+- **Ambiguities**: Unclear terms, conflicting requirements, or edge cases in the task description?
 
-Confirm before continuing.
+Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
 
 ## Phase 2: Explore
 
-Spawn **2-3 parallel subagents** to map the relevant parts of the codebase:
+Spawn **3–5 parallel subagents** to map the codebase. Each covers a distinct area:
 
+- **Data / schema layer**: models, types, database schema, migrations
 - **Feature area**: the code most directly relevant to the task
 - **Tests and patterns**: how similar things are tested and implemented elsewhere
-- **Dependencies**: what the affected code connects to upstream and downstream
+- **Dependencies and integrations**: what the affected code connects to upstream and downstream
+- **Config / infrastructure**: only if the task touches deployment, environment, or build
 
 Each subagent returns: what it found, what's relevant, and any risks or surprises.
 
-Synthesize findings into a brief **Context Summary**: current state, key constraints, and suggested entry points.
+Synthesize findings into a single **Context Summary**: current state, key constraints, implementation risks, suggested entry points.
 
 
 ## Phase 3: Plan
 
-Produce a concrete plan specifying:
+Switch to the strongest available reasoning model:
+- **Claude Code:** `/model opusplan` - runs Opus for planning, auto-switches to Sonnet for execution
+- **Codex:** `/model o3`, then `/plan`
 
-1. Exact files to create or modify
+The plan must specify:
+1. Exact files to create or modify (with line-level specificity where possible)
 2. Implementation order respecting the dependency graph
-3. Test strategy: new tests to write, existing tests to update
+3. How each acceptance criterion from Phase 1 will be satisfied
+4. Test strategy: new tests to write, existing tests to update
 
 Do not begin implementation until the user explicitly approves the plan.
 
 
 ## Phase 4: Implement
 
-Execute the approved plan. For independent units, work in parallel using subagents with `isolation: "worktree"` where appropriate.
+Decompose the approved plan into **independent units** and execute them as **parallel subagents**. This is the default — no worktrees, no batch, just concurrent agents working on non-overlapping files.
+
+Only reach for `isolation: "worktree"` when a unit genuinely needs it:
+- Two or more units modify the same files in incompatible ways
+- A unit is a large, self-contained refactor that would create noisy partial state for other agents running concurrently
+- Separate PRs per unit are explicitly required
+
+When in doubt, skip isolation. Parallel agents on separate files don't conflict, and resolving the occasional merge is faster than worktree overhead.
 
 Wait for all units to complete before moving to verification.
 
 
 ## Phase 5: Verify
 
-Invoke the built-in `verify` skill to confirm the change works as expected:
+Run `/goal` with this condition (adapt to the specific task):
 
-- All intended behavior works end-to-end
-- Existing tests pass
-- No linting or type errors
+```
+All acceptance criteria from Phase 1 are met. All existing tests pass. No linting errors or type errors. The feature works end-to-end including edge cases defined during Phase 1.
+```
 
-If anything fails, fix it and re-verify before reporting done.
+**Claude Code fallback:** If `/goal` is unavailable, invoke the built-in `verify` skill and spawn Opus agents to validate each criterion manually.
+
+Do not proceed until every criterion passes.
+
+
+## Completion Report
+
+- What was implemented and which files changed
+- Test coverage added or modified
+- Any open limitations or recommended follow-up tasks
