@@ -29,21 +29,23 @@ flowchart TD
 
 ### Optional Dependencies
 
-| Skill | What it does |
-|-------|-------------|
-| [`/edge-cases`](skills/edge-cases/SKILL.md) | Systematic edge case discovery and hardening. Spawns 8 parallel subagents across boundary, null, concurrency, auth, and other categories. Opted in during `/ship` Phase 1 |
-| [`/e2e`](skills/e2e/SKILL.md) | End-to-end test authoring with Playwright (web) or Maestro (mobile/React Native/Flutter). Golden path + critical edge cases. Opted in during `/ship` Phase 1 |
+`/ship` Phases 6–7 use `/edge-cases` and `/e2e` from [amajorai/skills](https://github.com/amajorai/skills). `/ship` Phase 0 checks whether they are installed and offers to fetch them automatically if not.
+
+| Skill | Source | What it does |
+|-------|--------|-------------|
+| [`/edge-cases`](https://github.com/amajorai/skills/tree/main/skills/edge-cases) | amajorai/skills | Systematic edge case discovery and hardening. Spawns 8 parallel subagents across boundary, null, concurrency, auth, and other categories |
+| [`/e2e`](https://github.com/amajorai/skills/tree/main/skills/e2e) | amajorai/skills | End-to-end test authoring with Playwright (web) or Maestro (mobile/React Native/Flutter). Golden path + critical edge cases |
 
 ## Built-in commands used
 
-`/ship` orchestrates these Claude Code built-ins and bundled skills:
+`/ship` orchestrates these Claude Code built-ins:
 
 - `/model opusplan` - Opus for planning, auto-switches to Sonnet for execution
 - `/batch` - parallel implementation across isolated git worktrees
 - `/goal` - autonomous quality loops for verify, simplify, and security phases
 - `/security-review` - built-in security audit
-- `/edge-cases` - bundled in this repo (Phase 6)
-- `/e2e` - bundled in this repo (Phase 7)
+- `/edge-cases` - from amajorai/skills (Phase 6, optional)
+- `/e2e` - from amajorai/skills (Phase 7, optional)
 
 ## Quickstart
 
@@ -52,6 +54,14 @@ npx skills add amajorai/ship.md
 ```
 
 Installs both skills and auto-configures them for whichever coding agents you have installed (Claude Code, Codex, Cursor, and 50+ others).
+
+### Auto-Update
+
+`/ship` and `/ship-fast` run `npx skills update <name> -y` at the start of each invocation and update themselves if a new version is available, then ask you to re-run.
+
+`/ship` also checks whether its optional dependencies (`/edge-cases` and `/e2e`) are installed, and offers to fetch them from [amajorai/skills](https://github.com/amajorai/skills) if missing.
+
+To opt out of auto-update, add `--no-update` to your command or set `SKILLS_AUTO_UPDATE: false` in your project CLAUDE.md.
 
 ### Claude Code plugin
 
