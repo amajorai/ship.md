@@ -65,6 +65,8 @@ Ask the user about (combine related questions, don't fire them one by one):
 
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
+Once the user confirms the acceptance criteria and quality gates, create tasks for every remaining phase using `TaskCreate`. Create all phase tasks up front so progress is visible from the start. Use the phase names as subjects (e.g. "Explore codebase", "Plan implementation", "Implement", "Verify", "Edge cases", "E2E tests", "Simplify", "Security review", "Final verify"). Skip tasks for phases the user opted out of. Set up dependencies with `addBlockedBy` so each phase is blocked by the previous one.
+
 
 ## Phase 1.5: GitHub Prerequisites Check
 
@@ -81,7 +83,7 @@ If both succeed, set `SHIP_GH_ENABLED=true`. No issues are created yet — that 
 
 ## Phase 2: Explore
 
-Spawn **3–5 parallel subagents** to map the codebase. Each covers a distinct area:
+Mark the Explore task `in_progress` before starting. Spawn **3–5 parallel subagents** to map the codebase. Each covers a distinct area:
 
 - **Data / schema layer**: models, types, database schema, migrations
 - **Feature area**: the code most directly relevant to the task
@@ -91,12 +93,12 @@ Spawn **3–5 parallel subagents** to map the codebase. Each covers a distinct a
 
 Each subagent returns: what it found, what's relevant, and any risks or surprises.
 
-Synthesize findings into a single **Context Summary**: current state, key constraints, implementation risks, suggested entry points.
+Synthesize findings into a single **Context Summary**: current state, key constraints, implementation risks, suggested entry points. Mark the Explore task `completed`.
 
 
 ## Phase 3: Plan
 
-Call the `EnterPlanMode` tool to switch into plan mode. This displays the plan to the user in the dedicated plan UI and uses the strongest available model for reasoning.
+Mark the Plan task `in_progress`. Call the `EnterPlanMode` tool to switch into plan mode. This displays the plan to the user in the dedicated plan UI and uses the strongest available model for reasoning.
 
 If `EnterPlanMode` is unavailable (Codex or other agents): switch to the strongest reasoning model available and present the plan as a structured markdown block.
 
@@ -106,7 +108,7 @@ The plan must specify:
 3. How each acceptance criterion from Phase 1 will be satisfied
 4. Test strategy: new tests to write, existing tests to update
 
-Do not begin implementation until the user explicitly approves the plan. Call `ExitPlanMode` once the user approves to return to normal execution mode.
+Do not begin implementation until the user explicitly approves the plan. Call `ExitPlanMode` once the user approves to return to normal execution mode. Mark the Plan task `completed`.
 
 **If `SHIP_GH_ENABLED=true`**, after the user approves the plan, create one GitHub issue per atomic implementation unit. Each issue must be self-contained — an agent reading only the issue should have everything it needs. Use this template:
 
@@ -133,7 +135,7 @@ Create all issues with `gh issue create`, collect their URLs and numbers, and te
 
 ## Phase 4: Implement
 
-Decompose the approved plan into **independent units** and execute in parallel using the strategy chosen in Phase 1:
+Mark the Implement task `in_progress`. Decompose the approved plan into **independent units** and execute in parallel using the strategy chosen in Phase 1:
 
 - **Parallel subagents, shared workspace** *(recommended)*: spawn concurrent subagents using the `Agent` tool on the same working tree. Fastest path — use when units touch different files.
 - **Let the agent decide**: review the plan now and pick the right strategy. Default to shared workspace; switch to isolated worktrees only if two or more units modify the same files incompatibly or a unit is a large isolated refactor that would create noisy partial state.
@@ -145,12 +147,12 @@ Each agent's prompt must include its assigned issue URL (if `SHIP_GH_ENABLED=tru
 
 Agents are responsible for closing their own issue on completion. Do not wait until the end of the pipeline.
 
-Wait for all units to complete before moving to quality gates.
+Wait for all units to complete before moving to quality gates. Mark the Implement task `completed`.
 
 
 ## Phase 5: Verify
 
-Spawn an autonomous `Agent` with the following goal condition (adapt to the specific task). Instruct it to iterate — running tests, fixing failures, re-checking criteria — until everything passes, then return its result:
+Mark the Verify task `in_progress`. Spawn an autonomous `Agent` with the following goal condition (adapt to the specific task). Instruct it to iterate — running tests, fixing failures, re-checking criteria — until everything passes, then return its result:
 
 ```
 All acceptance criteria from Phase 1 are met. All existing tests pass. No linting errors or type errors. The feature works end-to-end including edge cases defined during Phase 1.
@@ -158,14 +160,14 @@ All acceptance criteria from Phase 1 are met. All existing tests pass. No lintin
 
 If spawning an agent is not suitable, invoke the `verify` skill using the `Skill` tool: `Skill({skill: "verify"})`.
 
-Do not proceed until every criterion passes.
+Do not proceed until every criterion passes. Mark the Verify task `completed`.
 
 
 ## Phase 6: Edge Cases
 
 *Skip if edge cases were opted out in Phase 1.*
 
-Invoke the `edge-cases` skill using the `Skill` tool, passing the feature area and changed files as args:
+Mark the Edge cases task `in_progress`. Invoke the `edge-cases` skill using the `Skill` tool, passing the feature area and changed files as args:
 
 ```
 Skill({ skill: "edge-cases", args: "<feature area or changed files>" })
@@ -173,36 +175,36 @@ Skill({ skill: "edge-cases", args: "<feature area or changed files>" })
 
 This runs 8 parallel subagents to enumerate edge cases across boundary values, null inputs, invalid types, error states, concurrency, adversarial data, state machine violations, and auth boundaries. It then writes tests for every unhandled P0/P1 case, confirms each test fails before the fix and passes after, and verifies no regressions.
 
-Do not proceed until all P0 and P1 edge cases are covered and the full test suite passes.
+Do not proceed until all P0 and P1 edge cases are covered and the full test suite passes. Mark the Edge cases task `completed`.
 
 
 ## Phase 7: E2E Tests
 
 *Skip if E2E tests were opted out in Phase 1.*
 
-Invoke the `e2e` skill using the `Skill` tool, passing the feature area and flows as args:
+Mark the E2E tests task `in_progress`. Invoke the `e2e` skill using the `Skill` tool, passing the feature area and flows as args:
 
 ```
 Skill({ skill: "e2e", args: "<feature or flow to cover>" })
 ```
 
-This discovers user flows, sets up Playwright (web) or Maestro (mobile) if needed, writes golden-path and critical edge-case tests, runs them, and fixes any failures. All tests must pass before proceeding.
+This discovers user flows, sets up Playwright (web) or Maestro (mobile) if needed, writes golden-path and critical edge-case tests, runs them, and fixes any failures. All tests must pass before proceeding. Mark the E2E tests task `completed`.
 
 
 ## Phase 8: Simplify
 
-Spawn an autonomous `Agent` with the following goal condition. Instruct it to iterate — removing dead code, flattening unnecessary abstractions, simplifying logic — until the condition is met, then return:
+Mark the Simplify task `in_progress`. Spawn an autonomous `Agent` with the following goal condition. Instruct it to iterate — removing dead code, flattening unnecessary abstractions, simplifying logic — until the condition is met, then return:
 
 ```
 All code added or modified for this task is as simple as possible. No unnecessary abstractions, dead code, over-engineered patterns, or speculative generality. Every line serves a concrete current requirement. All existing tests still pass.
 ```
 
-Do not accept simplifications that break correctness — the agent iterates until tests pass.
+Do not accept simplifications that break correctness — the agent iterates until tests pass. Mark the Simplify task `completed`.
 
 
 ## Phase 9: Security Review
 
-Invoke the `security-review` skill using the `Skill` tool:
+Mark the Security review task `in_progress`. Invoke the `security-review` skill using the `Skill` tool:
 
 ```
 Skill({ skill: "security-review" })
@@ -214,12 +216,12 @@ If the `security-review` skill is unavailable, spawn an autonomous `Agent` with 
 All changes have been audited for: (1) input validation at system boundaries; (2) authentication and authorization on new endpoints; (3) no injection vulnerabilities (SQL, XSS, command injection, path traversal); (4) no hardcoded secrets or tokens; (5) intentional and documented trust boundary crossings. All HIGH and CRITICAL findings are fixed.
 ```
 
-Document any accepted LOW or MEDIUM findings with explicit rationale before proceeding.
+Document any accepted LOW or MEDIUM findings with explicit rationale before proceeding. Mark the Security review task `completed`.
 
 
 ## Phase 10: Final Verify
 
-Repeat Phase 5. Confirm the codebase is shippable after hardening, simplification, and security fixes:
+Mark the Final verify task `in_progress`. Repeat Phase 5. Confirm the codebase is shippable after hardening, simplification, and security fixes:
 
 1. All original acceptance criteria still pass
 2. No regressions from Phase 6 (edge cases)
@@ -227,6 +229,8 @@ Repeat Phase 5. Confirm the codebase is shippable after hardening, simplificatio
 4. No regressions from Phase 8 (simplify)
 5. No regressions from Phase 9 (security)
 6. Application is in a clean, deployable state
+
+Mark the Final verify task `completed`.
 
 
 ## Completion Report

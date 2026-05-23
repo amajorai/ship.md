@@ -35,6 +35,7 @@ flowchart TD
 - `/security-review` - built-in security audit
 - `/edge-cases` - from amajorai/skills (Phase 6, optional)
 - `/e2e` - from amajorai/skills (Phase 7, optional)
+- **Task tools** (`TaskCreate`, `TaskUpdate`) - creates a task per phase after the interview so you can see live progress through the pipeline in Claude Code's task UI
 
 ## Quickstart
 

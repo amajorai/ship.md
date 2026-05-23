@@ -49,10 +49,12 @@ Ask the user in a single message (combine all questions):
 
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
+Once the user confirms, create tasks for all remaining phases using `TaskCreate`: "Explore codebase", "Plan implementation", "Implement", "Verify". Set up `addBlockedBy` dependencies so each phase is blocked by the previous one.
+
 
 ## Phase 2: Explore
 
-Spawn **3–5 parallel subagents** to map the codebase. Each covers a distinct area:
+Mark the Explore task `in_progress`. Spawn **3–5 parallel subagents** to map the codebase. Each covers a distinct area:
 
 - **Data / schema layer**: models, types, database schema, migrations
 - **Feature area**: the code most directly relevant to the task
@@ -62,12 +64,12 @@ Spawn **3–5 parallel subagents** to map the codebase. Each covers a distinct a
 
 Each subagent returns: what it found, what's relevant, and any risks or surprises.
 
-Synthesize findings into a single **Context Summary**: current state, key constraints, implementation risks, suggested entry points.
+Synthesize findings into a single **Context Summary**: current state, key constraints, implementation risks, suggested entry points. Mark the Explore task `completed`.
 
 
 ## Phase 3: Plan
 
-Call the `EnterPlanMode` tool to switch into plan mode. This displays the plan to the user in the dedicated plan UI and uses the strongest available model for reasoning.
+Mark the Plan task `in_progress`. Call the `EnterPlanMode` tool to switch into plan mode. This displays the plan to the user in the dedicated plan UI and uses the strongest available model for reasoning.
 
 If `EnterPlanMode` is unavailable (Codex or other agents): switch to the strongest reasoning model available and present the plan as a structured markdown block.
 
@@ -77,23 +79,23 @@ The plan must specify:
 3. How each acceptance criterion from Phase 1 will be satisfied
 4. Test strategy: new tests to write, existing tests to update
 
-Do not begin implementation until the user explicitly approves the plan. Call `ExitPlanMode` once the user approves to return to normal execution mode.
+Do not begin implementation until the user explicitly approves the plan. Call `ExitPlanMode` once the user approves to return to normal execution mode. Mark the Plan task `completed`.
 
 
 ## Phase 4: Implement
 
-Decompose the approved plan into **independent units** and execute in parallel using the strategy chosen in Phase 1:
+Mark the Implement task `in_progress`. Decompose the approved plan into **independent units** and execute in parallel using the strategy chosen in Phase 1:
 
 - **Parallel subagents, shared workspace** *(recommended)*: spawn concurrent subagents using the `Agent` tool on the same working tree. Fastest path — use when units touch different files.
 - **Let the agent decide**: review the plan now and pick the right strategy. Default to shared workspace; switch to isolated worktrees only if two or more units modify the same files incompatibly or a unit is a large isolated refactor that would create noisy partial state.
 - **Isolated worktrees**: spawn agents using the `Agent` tool with `isolation: "worktree"`. Each agent works in its own git worktree. Create PRs after each completes with `gh pr create`.
 
-Wait for all units to complete before moving to verification.
+Wait for all units to complete before moving to verification. Mark the Implement task `completed`.
 
 
 ## Phase 5: Verify
 
-Spawn an autonomous `Agent` with the following goal condition (adapt to the specific task). Instruct it to iterate — running tests, fixing failures, re-checking criteria — until everything passes, then return its result:
+Mark the Verify task `in_progress`. Spawn an autonomous `Agent` with the following goal condition (adapt to the specific task). Instruct it to iterate — running tests, fixing failures, re-checking criteria — until everything passes, then return its result:
 
 ```
 All acceptance criteria from Phase 1 are met. All existing tests pass. No linting errors or type errors. The feature works end-to-end including edge cases defined during Phase 1.
@@ -101,7 +103,7 @@ All acceptance criteria from Phase 1 are met. All existing tests pass. No lintin
 
 If spawning an agent is not suitable, invoke the `verify` skill using the `Skill` tool: `Skill({skill: "verify"})`.
 
-Do not proceed until every criterion passes.
+Do not proceed until every criterion passes. Mark the Verify task `completed`.
 
 
 ## Completion Report
