@@ -113,6 +113,9 @@ Do not begin implementation until the user explicitly approves the plan. Call `E
 **If `SHIP_GH_ENABLED=true`**, after the user approves the plan, create one GitHub issue per atomic implementation unit. Each issue must be self-contained — an agent reading only the issue should have everything it needs. Use this template:
 
 ```
+## Goal
+<what this achieves for the user — one sentence, outcome-focused>
+
 ## Task
 <what specifically needs to be done — one atomic, independently shippable change>
 
@@ -122,6 +125,9 @@ Do not begin implementation until the user explicitly approves the plan. Call `E
 ## Acceptance Criteria
 - [ ] <specific, verifiable criterion>
 - [ ] <specific, verifiable criterion>
+
+## Out of Scope
+- <what we are explicitly NOT doing in this unit>
 
 ## Dependencies
 <list other issue numbers this unit depends on, or "none">
@@ -143,9 +149,13 @@ Mark the Implement task `in_progress`. Decompose the approved plan into **indepe
 
 Each agent's prompt must include its assigned issue URL (if `SHIP_GH_ENABLED=true`):
 
-> "Your task is fully specified in this GitHub issue: `<issue URL>`. Read the Task, Context, Acceptance Criteria, and Notes before writing any code. When all acceptance criteria are satisfied and your changes are committed, close the issue: `gh issue close <number> --reason completed`"
+> "Your task is fully specified in this GitHub issue: `<issue URL>`. Read the Goal, Task, Context, Acceptance Criteria, and Notes before writing any code. When all acceptance criteria are satisfied and your changes are committed, open a PR that closes the issue:
+> ```
+> gh pr create --title "feat: <unit name>" --body "Closes #<number>"
+> ```
+> Then close the issue: `gh issue close <number> --reason completed`"
 
-Agents are responsible for closing their own issue on completion. Do not wait until the end of the pipeline.
+Agents are responsible for opening their PR and closing their own issue on completion. Do not wait until the end of the pipeline.
 
 Wait for all units to complete before moving to quality gates. Mark the Implement task `completed`.
 
