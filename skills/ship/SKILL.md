@@ -110,7 +110,35 @@ The plan must specify:
 
 Do not begin implementation until the user explicitly approves the plan. Call `ExitPlanMode` once the user approves to return to normal execution mode. Mark the Plan task `completed`.
 
-**If `SHIP_GH_ENABLED=true`**, after the user approves the plan, create one GitHub issue per atomic implementation unit. Each issue must be self-contained — an agent reading only the issue should have everything it needs. Use this template:
+**If `SHIP_GH_ENABLED=true`**, after the user approves the plan, structure work as a parent epic with sub-issues:
+
+**Step 1: Create the parent epic issue**
+
+One issue representing the full feature. Its body is a tasklist of all sub-issues (filled in after sub-issues are created):
+
+```
+## Goal
+<what this achieves for the user — one sentence, outcome-focused>
+
+## Plan
+<summary of the approach from Phase 3>
+
+## Sub-Issues
+<!-- filled in after sub-issues are created -->
+```
+
+```bash
+EPIC_URL=$(gh issue create \
+  --title "feat: <feature name>" \
+  --body "..." \
+  --label "ship")
+EPIC_NUM=$(echo $EPIC_URL | grep -o '[0-9]*$')
+EPIC_ID=$(gh issue view $EPIC_NUM --json id -q .id)
+```
+
+**Step 2: Create sub-issues**
+
+One issue per atomic implementation unit. Each must be self-contained. Use this template:
 
 ```
 ## Goal
@@ -120,7 +148,7 @@ Do not begin implementation until the user explicitly approves the plan. Call `E
 <what specifically needs to be done — one atomic, independently shippable change>
 
 ## Context
-<why this is needed; what it connects to; relevant file paths, patterns, or constraints surfaced during Phase 2 exploration>
+<why this is needed; relevant file paths, patterns, or constraints from Phase 2>
 
 ## Acceptance Criteria
 - [ ] <specific, verifiable criterion>
@@ -129,14 +157,55 @@ Do not begin implementation until the user explicitly approves the plan. Call `E
 ## Out of Scope
 - <what we are explicitly NOT doing in this unit>
 
-## Dependencies
-<list other issue numbers this unit depends on, or "none">
+## Blocked by
+<"none" or list of issue numbers this must wait for, e.g. "Blocked by #4, #5">
 
 ## Notes
 <gotchas, patterns to follow, edge cases to watch for>
 ```
 
-Create all issues with `gh issue create`, collect their URLs and numbers, and tell the user the full list. Label issues consistently (e.g. `--label "ship"`) if the label exists.
+```bash
+SUB_URL=$(gh issue create \
+  --title "feat: <unit name>" \
+  --body "..." \
+  --label "ship")
+SUB_NUM=$(echo $SUB_URL | grep -o '[0-9]*$')
+SUB_ID=$(gh issue view $SUB_NUM --json id -q .id)
+```
+
+**Step 3: Link sub-issues to the epic via GitHub's sub-issue API**
+
+```bash
+gh api graphql -f query="
+mutation {
+  addSubIssue(input: {issueId: \"$EPIC_ID\", subIssueId: \"$SUB_ID\"}) {
+    issue { number }
+    subIssue { number }
+  }
+}"
+```
+
+Repeat for every sub-issue. This creates the parent→child hierarchy visible in GitHub's issue UI and project views.
+
+**Step 4: Update the epic body with the sub-issue tasklist**
+
+```bash
+gh issue edit $EPIC_NUM --body "$(cat <<EOF
+## Goal
+<goal>
+
+## Plan
+<summary>
+
+## Sub-Issues
+- [ ] #<sub1> <title>
+- [ ] #<sub2> <title>
+- [ ] #<sub3> <title>
+EOF
+)"
+```
+
+Tell the user the epic URL and all sub-issue URLs. The sub-issue tasklist on the epic will show live completion progress as agents close each one.
 
 
 ## Phase 4: Implement
@@ -147,15 +216,21 @@ Mark the Implement task `in_progress`. Decompose the approved plan into **indepe
 - **Let the agent decide**: review the plan now and pick the right strategy. Default to shared workspace; switch to isolated worktrees only if two or more units modify the same files incompatibly or a unit is a large isolated refactor that would create noisy partial state.
 - **Isolated worktrees**: spawn agents using the `Agent` tool with `isolation: "worktree"`. Each agent works in its own git worktree. Create PRs after each completes with `gh pr create`.
 
-Each agent's prompt must include its assigned issue URL (if `SHIP_GH_ENABLED=true`):
+**If `SHIP_GH_ENABLED=true`**, respect the dependency order declared in each sub-issue's "Blocked by" field:
 
-> "Your task is fully specified in this GitHub issue: `<issue URL>`. Read the Goal, Task, Context, Acceptance Criteria, and Notes before writing any code. When all acceptance criteria are satisfied and your changes are committed, open a PR that closes the issue:
+1. Group sub-issues into waves: wave 1 has no blockers, wave 2 is unblocked after wave 1 completes, etc.
+2. Dispatch all sub-issues in wave 1 in parallel. Wait for all to complete before starting wave 2.
+3. Repeat until all waves are done.
+
+Each agent's prompt must include its assigned sub-issue URL:
+
+> "Your task is fully specified in this GitHub sub-issue: `<sub-issue URL>`. Read the Goal, Task, Context, Acceptance Criteria, and Notes before writing any code. Do not start until all issues listed under 'Blocked by' are closed. When all acceptance criteria are satisfied and your changes are committed, open a PR that closes the sub-issue:
 > ```
 > gh pr create --title "feat: <unit name>" --body "Closes #<number>"
 > ```
-> Then close the issue: `gh issue close <number> --reason completed`"
+> Then close the sub-issue: `gh issue close <number> --reason completed`"
 
-Agents are responsible for opening their PR and closing their own issue on completion. Do not wait until the end of the pipeline.
+Agents are responsible for opening their PR and closing their own sub-issue on completion. Do not wait until the end of the pipeline.
 
 Wait for all units to complete before moving to quality gates. Mark the Implement task `completed`.
 
@@ -252,13 +327,17 @@ Mark the Final verify task `completed`.
 - Security findings and their resolutions
 - Any open limitations or recommended follow-up tasks
 
-**If `SHIP_GH_ENABLED=true`**, verify all issues created in Phase 3 are closed:
+**If `SHIP_GH_ENABLED=true`**, verify all sub-issues are closed and the epic reflects completion:
 
 ```bash
+# Check for any open sub-issues
 gh issue list --label "ship" --state open
+
+# Close the epic issue now that all sub-issues are done
+gh issue close $EPIC_NUM --reason completed
 ```
 
-For any still open, close them with a note explaining why (e.g. merged into another unit, superseded, or deferred):
+For any sub-issues still open, close them with a note:
 
 ```bash
 gh issue close <number> --comment "<reason>" --reason "not planned"
