@@ -48,14 +48,14 @@ Do not proceed until you have enough information to write unambiguous acceptance
 ls .claude/skills/edge-cases.md .claude/skills/e2e.md 2>/dev/null
 ```
 
-For each gate the user opted into whose skill is missing, offer to install it now (best-effort — if install fails, tell the user and skip that gate's phase):
+For each gate the user opted into whose skill is missing, install it now (best-effort — if install fails, tell the user and skip that gate's phase):
 
 ```bash
-npx --yes skills add amajorai/skills/skills/edge-cases   # only if edge cases opted in and missing
-npx --yes skills add amajorai/skills/skills/e2e          # only if E2E opted in and missing
+npx skills add amajorai/skills/skills/edge-cases && echo "EDGE_CASES_INSTALLED" || echo "EDGE_CASES_INSTALL_FAILED"   # only if edge cases opted in and missing
+npx skills add amajorai/skills/skills/e2e && echo "E2E_INSTALLED" || echo "E2E_INSTALL_FAILED"                        # only if E2E opted in and missing
 ```
 
-If the user declines an install, or it fails, the corresponding phase (6 and/or 7) is skipped — record that in your notes so the phase is not attempted. Do not check or install a skill for a gate the user opted out of.
+If the output contains `_INSTALL_FAILED`, the corresponding phase (6 and/or 7) is skipped — record that in your notes so the phase is not attempted. Do not check or install a skill for a gate the user opted out of.
 
 Once the user has confirmed the acceptance criteria, the quality gates, the GitHub-issues decision, and the implementation strategy — i.e. at the very end of the interview, not before — create tasks for every remaining phase using `TaskCreate`. Create all phase tasks up front so progress is visible from the start. Use the phase names as subjects (e.g. "Explore codebase", "Plan implementation", "Implement", "Verify", "Edge cases", "E2E tests", "Simplify", "Security review", "Final verify"). Skip tasks for phases the user opted out of. Set up dependencies with `addBlockedBy` so each phase is blocked by the previous one in the *remaining* sequence — when a phase is skipped, chain across the gap (e.g. if edge cases is skipped but E2E is kept, "E2E tests" is blocked by "Verify"; if both are skipped, "Simplify" is blocked by "Verify").
 
@@ -79,18 +79,37 @@ gh auth status && gh repo view --json nameWithOwner -q .nameWithOwner
 
 If both succeed, set `SHIP_GH_ENABLED=true` and record this decision in your notes (it is referenced in Phases 3, 4, and the Completion Report).
 
-**Ensure the `ship` label exists** so issue creation in Phase 3 does not fail. `gh label create` errors if the label already exists, so make it idempotent. Use `--force` (supported by current `gh`), which creates the label or updates it in place and exits 0 either way, so a real failure (no auth/network) still surfaces a non-zero exit rather than being masked:
+**Set up ship labels.** First check whether a plain `ship` label (without emoji) already exists:
 
 ```bash
-gh label create ship --color BFD4F2 --description "Created by the ship skill" --force
+gh label list --json name -q '.[] | select(.name == "ship") | .name'
 ```
 
-If your `gh` version does not support `--force`, fall back to the idempotent form below — but note its error is swallowed, so if it reports "already exists" yet issue creation later fails on a missing label, re-check auth:
+If the output is `ship`, ask the user: **"There's an existing `ship` label without the box emoji. Would you like to rename it to `📦 ship`?"**
+- **Yes** → rename it in place (all issues already tagged carry the new name automatically):
+  ```bash
+  gh label edit ship --name "📦 ship" --color "BFD4F2" --description "Tracked by the ship skill"
+  ```
+  Record `SHIP_LABEL=📦 ship` in your notes.
+- **No** → keep `ship` as the label name for this run. Record `SHIP_LABEL=ship` in your notes.
+
+If no plain `ship` label was found, record `SHIP_LABEL=📦 ship` in your notes.
+
+Now create or update the ship label and all phase labels (idempotent — `--force` updates if they already exist):
 
 ```bash
-gh label create ship --color BFD4F2 --description "Created by the ship skill" 2>/dev/null \
-  || echo "label 'ship' already present (or label creation skipped)"
+gh label create "<SHIP_LABEL>"  --color "BFD4F2" --description "Tracked by the ship skill"   --force
+gh label create "🔍 explore"    --color "E3F2FD" --description "ship: explore phase"          --force
+gh label create "📋 plan"       --color "FFF3E0" --description "ship: plan phase"             --force
+gh label create "🔨 implement"  --color "E8F5E9" --description "ship: implement phase"        --force
+gh label create "✅ verify"     --color "F3E5F5" --description "ship: verify phase"           --force
+gh label create "🔍 edge cases" --color "FBE9E7" --description "ship: edge-cases phase"       --force
+gh label create "🧪 e2e"        --color "E0F7FA" --description "ship: e2e phase"              --force
+gh label create "✂️ simplify"   --color "F9FBE7" --description "ship: simplify phase"         --force
+gh label create "🔒 security"   --color "FCE4EC" --description "ship: security phase"         --force
 ```
+
+Substitute the literal `SHIP_LABEL` value (either `📦 ship` or `ship`) into the first command above.
 
 No issues are created yet — that happens in Phase 3 once work is decomposed into atomic units.
 
@@ -128,6 +147,8 @@ Do the GitHub issue creation below (if applicable) *before* marking the Plan tas
 
 **Single-unit shortcut:** If the plan is a single atomic unit (one independently shippable change), do *not* create an epic-plus-sub-issue hierarchy — that overhead adds no value for one unit. Instead create exactly one issue using the sub-issue template in Step 2 (its "Blocked by" will be "none"), record its number/URL, tell the user, then mark the Plan task `completed` and proceed to Phase 4 — skip Steps 1, 3, and 4 entirely (including their closing instructions, which assume an epic exists). The single agent in Phase 4 is pointed at this one issue. Only proceed with the full epic structure below when there are two or more units.
 
+Substitute the literal `SHIP_LABEL` value you recorded in Phase 1.5 (either `📦 ship` or `ship`) wherever `<SHIP_LABEL>` appears in the commands below.
+
 **Step 1: Create the parent epic issue**
 
 One issue representing the full feature. Its body is a tasklist of all sub-issues (the tasklist is filled in by Step 4, after sub-issues exist):
@@ -147,7 +168,8 @@ One issue representing the full feature. Its body is a tasklist of all sub-issue
 EPIC_URL=$(gh issue create \
   --title "feat: <feature name>" \
   --body "<epic body using the template above>" \
-  --label ship)
+  --label "<SHIP_LABEL>" \
+  --label "📋 plan")
 EPIC_NUM=$(echo "$EPIC_URL" | grep -oE '[0-9]+$')
 EPIC_ID=$(gh issue view "$EPIC_NUM" --json id -q .id)
 ```
@@ -188,7 +210,7 @@ Create each sub-issue. Run this block once per unit, recording the resulting num
 SUB_URL=$(gh issue create \
   --title "feat: <unit name>" \
   --body "<sub-issue body using the template above>" \
-  --label ship)
+  --label "<SHIP_LABEL>")
 SUB_NUM=$(echo "$SUB_URL" | grep -oE '[0-9]+$')
 SUB_ID=$(gh issue view "$SUB_NUM" --json id -q .id)
 ```
@@ -241,7 +263,13 @@ Tell the user the epic URL and all sub-issue URLs, then mark the Plan task `comp
 
 ## Phase 4: Implement
 
-Mark the Implement task `in_progress`. Decompose the approved plan into **independent units**. The approved plan always yields at least one unit; if your decomposition somehow produces zero units, treat the whole plan as a single unit rather than spawning nothing. Execute using the strategy chosen in Phase 1:
+Mark the Implement task `in_progress`. If `SHIP_GH_ENABLED=true` and an epic exists, transition its phase label (substitute the literal epic number recorded in Phase 3):
+
+```bash
+gh issue edit <EPIC_NUM> --add-label "🔨 implement" --remove-label "📋 plan"
+```
+
+Decompose the approved plan into **independent units**. The approved plan always yields at least one unit; if your decomposition somehow produces zero units, treat the whole plan as a single unit rather than spawning nothing. Execute using the strategy chosen in Phase 1:
 
 - **Parallel subagents, shared workspace** *(recommended)*: spawn concurrent subagents using the `Agent` tool on the same working tree. Fastest path — use when units touch different files.
 - **Let the agent decide**: review the plan now and pick the right strategy. Default to shared workspace; switch to isolated worktrees only if two or more units modify the same files incompatibly or a unit is a large isolated refactor that would create noisy partial state.
@@ -274,12 +302,24 @@ In this case agents open their own PR and close their own issue on completion; d
 
 Then, after all waves finish, you (the orchestrator) open a single PR for the shared branch that references every issue in scope, e.g. `gh pr create --title "feat: <feature name>" --body "Closes #<sub1>, closes #<sub2>, closes #<sub3>"` (use the literal sub-issue numbers you recorded; for a single-unit task, just that one issue's number). The agents already closed those issues directly in the prompt above, so the `Closes #` references here primarily link the PR to them for traceability (and will harmlessly no-op on issues that are already closed).
 
-Wait for all units across all waves to complete before moving to quality gates. Mark the Implement task `completed`.
+Wait for all units across all waves to complete before moving to quality gates. If `SHIP_GH_ENABLED=true` and an epic exists, remove the phase label:
+
+```bash
+gh issue edit <EPIC_NUM> --remove-label "🔨 implement"
+```
+
+Mark the Implement task `completed`.
 
 
 ## Phase 5: Verify
 
-Mark the Verify task `in_progress`. Spawn an autonomous `Agent` with the following goal condition (adapt to the specific task). Instruct it to iterate — running tests, fixing failures, re-checking criteria — until everything passes, then return its result:
+Mark the Verify task `in_progress`. If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --add-label "✅ verify"
+```
+
+Spawn an autonomous `Agent` with the following goal condition (adapt to the specific task). Instruct it to iterate — running tests, fixing failures, re-checking criteria — until everything passes, then return its result:
 
 ```
 All acceptance criteria from Phase 1 are met. All existing tests pass. No linting errors or type errors. The feature works end-to-end including edge cases defined during Phase 1.
@@ -291,14 +331,26 @@ If the repository has no test suite at all, "all existing tests pass" is vacuous
 
 If spawning an agent is not suitable, invoke the `verify` skill using the `Skill` tool. Pass the acceptance criteria and changed files as args so the skill knows what to check: `Skill({ skill: "verify", args: "<acceptance criteria + changed files>" })`.
 
-Do not proceed until every criterion passes (or the user explicitly accepts an unmet criterion per the loop-bound guidance above). Mark the Verify task `completed`.
+Do not proceed until every criterion passes (or the user explicitly accepts an unmet criterion per the loop-bound guidance above). If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --remove-label "✅ verify"
+```
+
+Mark the Verify task `completed`.
 
 
 ## Phase 6: Edge Cases
 
 *Skip if edge cases were opted out in Phase 1, or if the `edge-cases` skill is unavailable (declined or failed install in Phase 1). When skipping, do nothing here — there is no "Edge cases" task if it was opted out, and if the task exists (opted in but skill missing) leave it as-is — and move on to Phase 7.*
 
-Mark the Edge cases task `in_progress`. Invoke the `edge-cases` skill using the `Skill` tool, passing the feature area and changed files as args:
+Mark the Edge cases task `in_progress`. If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --add-label "🔍 edge cases"
+```
+
+Invoke the `edge-cases` skill using the `Skill` tool, passing the feature area and changed files as args:
 
 ```
 Skill({ skill: "edge-cases", args: "<feature area or changed files>" })
@@ -306,25 +358,49 @@ Skill({ skill: "edge-cases", args: "<feature area or changed files>" })
 
 This runs 8 parallel subagents to enumerate edge cases across boundary values, null inputs, invalid types, error states, concurrency, adversarial data, state machine violations, and auth boundaries. It then writes tests for every unhandled P0/P1 case, confirms each test fails before the fix and passes after, and verifies no regressions.
 
-Do not proceed until all P0 and P1 edge cases are covered and the full test suite passes. Mark the Edge cases task `completed`.
+Do not proceed until all P0 and P1 edge cases are covered and the full test suite passes. If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --remove-label "🔍 edge cases"
+```
+
+Mark the Edge cases task `completed`.
 
 
 ## Phase 7: E2E Tests
 
 *Skip if E2E tests were opted out in Phase 1, or if the `e2e` skill is unavailable (declined or failed install in Phase 1). When skipping, do nothing here — there is no "E2E tests" task if it was opted out, and if the task exists (opted in but skill missing) leave it as-is — and move on to Phase 8.*
 
-Mark the E2E tests task `in_progress`. Invoke the `e2e` skill using the `Skill` tool, passing the feature area and flows as args:
+Mark the E2E tests task `in_progress`. If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --add-label "🧪 e2e"
+```
+
+Invoke the `e2e` skill using the `Skill` tool, passing the feature area and flows as args:
 
 ```
 Skill({ skill: "e2e", args: "<feature or flow to cover>" })
 ```
 
-This discovers user flows, sets up Playwright (web) or Maestro (mobile) if needed, writes golden-path and critical edge-case tests, runs them, and fixes any failures. All tests must pass before proceeding. Mark the E2E tests task `completed`.
+This discovers user flows, sets up Playwright (web) or Maestro (mobile) if needed, writes golden-path and critical edge-case tests, runs them, and fixes any failures. All tests must pass before proceeding. If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --remove-label "🧪 e2e"
+```
+
+Mark the E2E tests task `completed`.
 
 
 ## Phase 8: Simplify
 
-Mark the Simplify task `in_progress`. Spawn an autonomous `Agent` with the following goal condition. Instruct it to iterate — removing dead code, flattening unnecessary abstractions, simplifying logic — until the condition is met, then return:
+Mark the Simplify task `in_progress`. If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --add-label "✂️ simplify"
+```
+
+Spawn an autonomous `Agent` with the following goal condition. Instruct it to iterate — removing dead code, flattening unnecessary abstractions, simplifying logic — until the condition is met, then return:
 
 ```
 All code added or modified for this task is as simple as possible. No unnecessary abstractions, dead code, over-engineered patterns, or speculative generality. Every line serves a concrete current requirement. All existing tests still pass.
@@ -332,12 +408,24 @@ All code added or modified for this task is as simple as possible. No unnecessar
 
 **Loop bound (prevents an infinite simplify/re-test cycle):** instruct the agent to make at most a bounded number of simplification passes — roughly 5 iterations, or fewer once each new pass yields no further safe simplification. Correctness always wins over simplicity: if a simplification breaks a test, the agent reverts that specific change rather than continuing to chase it. If after a pass the tests cannot be made to pass again, the agent must revert to the last green state and return a report of what it could not safely simplify — it must never leave the tree with failing tests, and must never loop indefinitely trying to make a broken simplification work. Treat "all existing tests still pass" as a hard gate: the phase ends in a state where they do, even if that means accepting less simplification.
 
+If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --remove-label "✂️ simplify"
+```
+
 Mark the Simplify task `completed` only once the tree is green and the agent has returned.
 
 
 ## Phase 9: Security Review
 
-Mark the Security review task `in_progress`. Invoke the `security-review` skill using the `Skill` tool. The skill audits the pending changes on the current branch on its own, so args are optional — but pass the feature area and the changed files so it can prioritize the code this task actually touched:
+Mark the Security review task `in_progress`. If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --add-label "🔒 security"
+```
+
+Invoke the `security-review` skill using the `Skill` tool. The skill audits the pending changes on the current branch on its own, so args are optional — but pass the feature area and the changed files so it can prioritize the code this task actually touched:
 
 ```
 Skill({ skill: "security-review", args: "<feature area + changed files from this task>" })
@@ -351,7 +439,13 @@ All changes have been audited for: (1) input validation at system boundaries; (2
 
 **Loop bound (fallback agent only):** if a HIGH/CRITICAL finding cannot be safely fixed within roughly 5 attempts, the agent stops and returns the unresolved finding with its analysis rather than looping — surface it to the user for a decision before continuing.
 
-Document any accepted LOW or MEDIUM findings with explicit rationale before proceeding. Mark the Security review task `completed`.
+Document any accepted LOW or MEDIUM findings with explicit rationale before proceeding. If `SHIP_GH_ENABLED=true` and an epic exists:
+
+```bash
+gh issue edit <EPIC_NUM> --remove-label "🔒 security"
+```
+
+Mark the Security review task `completed`.
 
 
 ## Phase 10: Final Verify
@@ -383,7 +477,7 @@ Report the following regardless of which path was taken. Omit the line for any p
 
 **If `SHIP_GH_ENABLED=true`**, additionally include the issue URLs (the epic and every sub-issue; for a single-unit task, just the one issue created in Phase 3 — there is no epic) **and the PR URL(s)** in the report — the single combined PR the orchestrator opened in Phase 4 (shared-workspace / "let the agent decide" paths) or each agent's PR (isolated-worktrees path). Then verify all sub-issues are closed and the epic reflects completion. Use the literal issue numbers you recorded in your notes — the `$EPIC_NUM`/`$SUB_ID` shell variables from Phase 3 are no longer in scope here.
 
-First, check that every sub-issue you created is closed. Listing by label is not enough — the epic itself also carries the `ship` label, so it would appear in the results. Check each sub-issue you recorded explicitly:
+First, check that every sub-issue you created is closed. Listing by label is not enough — the epic itself also carries the `<SHIP_LABEL>` label, so it would appear in the results. Check each sub-issue you recorded explicitly:
 
 ```bash
 # Replace with the actual sub-issue numbers you recorded in Phase 3.
