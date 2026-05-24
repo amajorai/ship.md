@@ -13,7 +13,7 @@ You are orchestrating a focused, quality-conscious development pipeline. Work th
 
 ## Phase 0: Auto-Update
 
-*Skip if `{{args}}` contains `--no-update`, or if `SKILLS_AUTO_UPDATE: false` is set in your project CLAUDE.md.*
+*Skip unless `{{args}}` contains `--update`, or `SKILLS_AUTO_UPDATE: true` is set in your project CLAUDE.md.*
 
 **1. Check if the `skills` CLI is available:**
 

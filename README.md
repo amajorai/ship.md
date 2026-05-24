@@ -47,11 +47,11 @@ Installs both skills and auto-configures them for whichever coding agents you ha
 
 ### Auto-Update
 
-`/ship` and `/ship-fast` run `npx skills update <name> -y` at the start of each invocation and update themselves if a new version is available, then ask you to re-run.
+Auto-update is **disabled by default**. Skills do not self-update unless you explicitly opt in — this prevents untrusted code from running automatically during a session (supply chain hygiene).
 
 `/ship` also checks whether its optional dependencies (`/edge-cases` and `/e2e`) are installed, and offers to fetch them from [amajorai/skills](https://github.com/amajorai/skills) if missing.
 
-To opt out of auto-update, add `--no-update` to your command or set `SKILLS_AUTO_UPDATE: false` in your project CLAUDE.md.
+To enable auto-update, pass `--update` to your command or set `SKILLS_AUTO_UPDATE: true` in your project CLAUDE.md.
 
 ### Claude Code plugin
 

@@ -13,38 +13,34 @@ You are orchestrating a comprehensive, quality-focused development pipeline. Wor
 
 ## Phase 0: Auto-Update & Dependencies
 
-*Skip if `{{args}}` contains `--no-update`, or if `SKILLS_AUTO_UPDATE: false` is set in your project CLAUDE.md.*
+*Skip this entire phase unless `{{args}}` contains `--update`, or `SKILLS_AUTO_UPDATE: true` is set in your project CLAUDE.md.*
 
-**1. Check if the `skills` CLI is available:**
+This phase is best-effort and must never block the user. If any command below fails (CLI not installed, no network, node/npx not on PATH), continue silently to Phase 1 — do not prompt the user to install anything.
 
-```bash
-skills --version 2>/dev/null || npx skills --version 2>/dev/null
-```
-
-If neither works (node/npx not on PATH), ask the user: "Install the skills CLI to enable auto-updates? (`npm install -g skills`)" — if yes, run that. If no, skip this entire phase.
-
-**2. Auto-update this skill:**
+**1. Attempt to auto-update this skill (best-effort):**
 
 ```bash
-npx skills update ship -y
+npx --yes skills update ship -y 2>/dev/null || true
 ```
 
-If the skill was updated, stop here and tell the user: **"This skill was just updated. Re-run your command to use the new version."** Otherwise continue silently.
+If — and only if — the command output indicates the skill was actually updated, stop here and tell the user: **"This skill was just updated. Re-run your command to use the new version."** In every other case (no update available, command failed, CLI missing), continue silently to step 2.
 
-**3. Check optional skill dependencies:**
+**2. Detect optional skill dependencies (no install prompt):**
 
-Look for `.claude/skills/edge-cases.md` and `.claude/skills/e2e.md` in the current project. If either is missing, ask the user:
-
-> "The `edge-cases` and `e2e` skills power Phases 6-7. Install them now?"
-
-If yes:
+Phases 6-7 use the `edge-cases` and `e2e` skills. Check whether they are available, but do not prompt to install them now — installation, if wanted, is offered contextually during the Phase 1 interview only if the user opts into those quality gates.
 
 ```bash
-npx skills add amajorai/skills/skills/edge-cases
-npx skills add amajorai/skills/skills/e2e
+ls .claude/skills/edge-cases.md .claude/skills/e2e.md 2>/dev/null
 ```
 
-If no, note that Phases 6-7 will be skipped automatically when the user opts out during the Phase 1 interview.
+Remember which of the two are present. If the user later opts into edge cases and/or E2E in Phase 1 but the corresponding skill is missing, that is when you offer to install it:
+
+```bash
+npx --yes skills add amajorai/skills/skills/edge-cases
+npx --yes skills add amajorai/skills/skills/e2e
+```
+
+If the user declines the install at that point, the corresponding phase (6 and/or 7) is skipped.
 
 ## Phase 1: Interview
 
@@ -61,24 +57,40 @@ Ask the user about (combine related questions, don't fire them one by one):
 - **Implementation strategy**: How should Phase 4 run parallel units?
   - **(Recommended) Parallel subagents, shared workspace** — fastest; agents work concurrently on the same working tree with no overhead. Works for most tasks where units touch different files.
   - **Let the agent decide** — agent evaluates the plan at implementation time and picks the right strategy based on file overlap and unit size.
-  - **Isolated worktrees** — each unit gets its own git worktree and produces a separate PR. Use only when units conflict on the same files or separate PRs are explicitly required.
+  - **Isolated worktrees** — each unit gets its own git worktree (and, on the GitHub path, its own PR). Use only when units conflict on the same files or separate PRs are explicitly required.
 
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
 Once the user confirms the acceptance criteria and quality gates, create tasks for every remaining phase using `TaskCreate`. Create all phase tasks up front so progress is visible from the start. Use the phase names as subjects (e.g. "Explore codebase", "Plan implementation", "Implement", "Verify", "Edge cases", "E2E tests", "Simplify", "Security review", "Final verify"). Skip tasks for phases the user opted out of. Set up dependencies with `addBlockedBy` so each phase is blocked by the previous one.
 
+**State you must track for the rest of the pipeline (in your own working memory / notes, not shell variables — shell state does not persist between tool calls):**
+
+- Whether each quality gate (edge cases, E2E) was opted in.
+- The chosen Phase 4 implementation strategy.
+- `SHIP_GH_ENABLED` (set in Phase 1.5).
+- If GitHub is enabled: the epic issue number and URL, and the number/URL of every sub-issue. The shell variables shown in later phases (`$EPIC_NUM`, `$EPIC_ID`, etc.) are only valid within the single command block that defines them; whenever a later phase needs an issue number, substitute the actual number you recorded here rather than relying on a variable persisting.
+
 
 ## Phase 1.5: GitHub Prerequisites Check
 
-*Skip entirely if the user opted out of GitHub issues in Phase 1.*
+*If the user opted out of GitHub issues in Phase 1, set `SHIP_GH_ENABLED=false` and skip the rest of this phase.* (Recording it explicitly as false means every later "If `SHIP_GH_ENABLED=true`" branch is unambiguously off.)
 
-Run both — if either fails, set `SHIP_GH_ENABLED=false`, tell the user why (not installed / not authenticated / no GitHub remote), and continue without issue tracking:
+Run both checks — if either fails, set `SHIP_GH_ENABLED=false`, tell the user why (gh not installed / not authenticated / no GitHub remote), and continue without issue tracking:
 
 ```bash
-gh auth status 2>/dev/null && gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null
+gh auth status && gh repo view --json nameWithOwner -q .nameWithOwner
 ```
 
-If both succeed, set `SHIP_GH_ENABLED=true`. No issues are created yet — that happens in Phase 3 once work is decomposed into atomic units.
+If both succeed, set `SHIP_GH_ENABLED=true` and record this decision in your notes (it is referenced in Phases 3, 4, and the Completion Report).
+
+**Ensure the `ship` label exists** so issue creation in Phase 3 does not fail. `gh label create` errors if the label already exists, so make it idempotent:
+
+```bash
+gh label create ship --color BFD4F2 --description "Created by the ship skill" 2>/dev/null \
+  || echo "label 'ship' already exists"
+```
+
+No issues are created yet — that happens in Phase 3 once work is decomposed into atomic units.
 
 
 ## Phase 2: Explore
@@ -110,11 +122,13 @@ The plan must specify:
 
 Do not begin implementation until the user explicitly approves the plan. Call `ExitPlanMode` once the user approves to return to normal execution mode. Mark the Plan task `completed`.
 
-**If `SHIP_GH_ENABLED=true`**, after the user approves the plan, structure work as a parent epic with sub-issues:
+**If `SHIP_GH_ENABLED=true`**, after the user approves the plan, decompose the plan into atomic implementation units, then create issues.
+
+**Single-unit shortcut:** If the plan is a single atomic unit (one independently shippable change), do *not* create an epic-plus-sub-issue hierarchy — that overhead adds no value for one unit. Instead create exactly one issue using the sub-issue template in Step 2 (its "Blocked by" will be "none"), record its number/URL, tell the user, and skip Steps 1, 3, and 4. The single agent in Phase 4 is pointed at this one issue. Only proceed with the full epic structure below when there are two or more units.
 
 **Step 1: Create the parent epic issue**
 
-One issue representing the full feature. Its body is a tasklist of all sub-issues (filled in after sub-issues are created):
+One issue representing the full feature. Its body is a tasklist of all sub-issues (the tasklist is filled in by Step 4, after sub-issues exist):
 
 ```
 ## Goal
@@ -130,11 +144,13 @@ One issue representing the full feature. Its body is a tasklist of all sub-issue
 ```bash
 EPIC_URL=$(gh issue create \
   --title "feat: <feature name>" \
-  --body "..." \
-  --label "ship")
-EPIC_NUM=$(echo $EPIC_URL | grep -o '[0-9]*$')
-EPIC_ID=$(gh issue view $EPIC_NUM --json id -q .id)
+  --body "<epic body using the template above>" \
+  --label ship)
+EPIC_NUM=$(echo "$EPIC_URL" | grep -oE '[0-9]+$')
+EPIC_ID=$(gh issue view "$EPIC_NUM" --json id -q .id)
 ```
+
+Record `EPIC_NUM` and `EPIC_URL` in your notes — you will need the literal number in Step 4 and the Completion Report, where `$EPIC_NUM` from this block will no longer be in scope.
 
 **Step 2: Create sub-issues**
 
@@ -164,33 +180,44 @@ One issue per atomic implementation unit. Each must be self-contained. Use this 
 <gotchas, patterns to follow, edge cases to watch for>
 ```
 
+Create each sub-issue. Run this block once per unit, recording the resulting number/URL for each:
+
 ```bash
 SUB_URL=$(gh issue create \
   --title "feat: <unit name>" \
-  --body "..." \
-  --label "ship")
-SUB_NUM=$(echo $SUB_URL | grep -o '[0-9]*$')
-SUB_ID=$(gh issue view $SUB_NUM --json id -q .id)
+  --body "<sub-issue body using the template above>" \
+  --label ship)
+SUB_NUM=$(echo "$SUB_URL" | grep -oE '[0-9]+$')
+SUB_ID=$(gh issue view "$SUB_NUM" --json id -q .id)
 ```
+
+Keep an ordered list of every sub-issue's number, URL, and node ID (`SUB_ID`) in your notes — Steps 3 and 4 and Phase 4 all need these literal values, and shell variables do not survive between command blocks.
 
 **Step 3: Link sub-issues to the epic via GitHub's sub-issue API**
 
+Run this once per sub-issue. Pass the node IDs as proper GraphQL variables (`-F` for typed/string variables) rather than interpolating them into the query string — string interpolation with escaped quotes is fragile and breaks on special characters. Substitute the actual node IDs you recorded:
+
 ```bash
-gh api graphql -f query="
-mutation {
-  addSubIssue(input: {issueId: \"$EPIC_ID\", subIssueId: \"$SUB_ID\"}) {
+gh api graphql \
+  -F epicId="<EPIC_ID node id>" \
+  -F subId="<this sub-issue's node id>" \
+  -f query='
+mutation($epicId: ID!, $subId: ID!) {
+  addSubIssue(input: { issueId: $epicId, subIssueId: $subId }) {
     issue { number }
     subIssue { number }
   }
-}"
+}'
 ```
 
-Repeat for every sub-issue. This creates the parent→child hierarchy visible in GitHub's issue UI and project views.
+This creates the parent→child hierarchy visible in GitHub's issue UI and project views. (`addSubIssue` requires the sub-issues feature; if your `gh`/API version rejects the mutation, fall back to listing the sub-issues in the epic body tasklist only — Step 4 still gives you a visible checklist.)
 
 **Step 4: Update the epic body with the sub-issue tasklist**
 
+Substitute the literal epic number and the real sub-issue numbers/titles you recorded:
+
 ```bash
-gh issue edit $EPIC_NUM --body "$(cat <<EOF
+gh issue edit <EPIC_NUM> --body "$(cat <<'EOF'
 ## Goal
 <goal>
 
@@ -205,34 +232,39 @@ EOF
 )"
 ```
 
-Tell the user the epic URL and all sub-issue URLs. The sub-issue tasklist on the epic will show live completion progress as agents close each one.
+Tell the user the epic URL and all sub-issue URLs.
+
+**Note on tasklist checkboxes:** Closing a sub-issue with `gh issue close` does *not* automatically tick its `- [ ]` checkbox in the epic body. GitHub does, however, render live open/closed status next to each referenced issue and rolls completion up in its sub-issue UI (from Step 3's linkage). If you want the literal checkboxes ticked too, the orchestrator must re-edit the epic body to change `- [ ]` to `- [x]` as each unit completes; otherwise rely on the sub-issue progress indicator and issue-status rendering, which update automatically.
 
 
 ## Phase 4: Implement
 
-Mark the Implement task `in_progress`. Decompose the approved plan into **independent units** and execute in parallel using the strategy chosen in Phase 1:
+Mark the Implement task `in_progress`. Decompose the approved plan into **independent units** and execute using the strategy chosen in Phase 1:
 
 - **Parallel subagents, shared workspace** *(recommended)*: spawn concurrent subagents using the `Agent` tool on the same working tree. Fastest path — use when units touch different files.
 - **Let the agent decide**: review the plan now and pick the right strategy. Default to shared workspace; switch to isolated worktrees only if two or more units modify the same files incompatibly or a unit is a large isolated refactor that would create noisy partial state.
 - **Isolated worktrees**: spawn agents using the `Agent` tool with `isolation: "worktree"`. Each agent works in its own git worktree. Create PRs after each completes with `gh pr create`.
 
-**If `SHIP_GH_ENABLED=true`**, respect the dependency order declared in each sub-issue's "Blocked by" field:
+**Dependency ordering is enforced by you, the orchestrator — not by the agents.** Spawned agents run concurrently and cannot observe or wait on one another, so an agent can never "wait until its blockers are closed." You sequence the work instead:
 
-1. Group sub-issues into waves: wave 1 has no blockers, wave 2 is unblocked after wave 1 completes, etc.
-2. Dispatch all sub-issues in wave 1 in parallel. Wait for all to complete before starting wave 2.
-3. Repeat until all waves are done.
+1. Build a dependency graph from the plan (or, if `SHIP_GH_ENABLED=true`, from each sub-issue's "Blocked by" field).
+2. Group units into waves: wave 1 = units with no blockers; wave 2 = units whose blockers are all in wave 1; and so on.
+3. Dispatch every unit in the current wave in parallel. **Wait for all agents in the wave to return before dispatching the next wave.** Never instruct an agent to self-wait.
+4. Repeat until all waves are done. A single-unit task is simply one wave with one agent.
 
-Each agent's prompt must include its assigned sub-issue URL:
+**Non-GitHub path (`SHIP_GH_ENABLED=false`):** there are no issues or PRs. Spawn one agent per unit, wave by wave as above, with a self-contained prompt derived directly from the approved plan. Because there is no issue to read, each agent's prompt must contain the unit's goal, the specific change to make, relevant context and file paths from Phase 2, and its acceptance criteria inline. Agents implement and commit their changes only; they do not open PRs or touch any issue. Skip the issue/PR instructions below.
 
-> "Your task is fully specified in this GitHub sub-issue: `<sub-issue URL>`. Read the Goal, Task, Context, Acceptance Criteria, and Notes before writing any code. Do not start until all issues listed under 'Blocked by' are closed. When all acceptance criteria are satisfied and your changes are committed, open a PR that closes the sub-issue:
+**GitHub path (`SHIP_GH_ENABLED=true`):** each agent's prompt must include its assigned issue URL (the sub-issue, or for a single-unit task the one issue created in Phase 3):
+
+> "Your task is fully specified in this GitHub issue: `<issue URL>`. Read the Goal, Task, Context, Acceptance Criteria, and Notes before writing any code. (Your orchestrator has already confirmed that everything this unit depends on is complete — implement immediately; do not wait on other issues.) When all acceptance criteria are satisfied and your changes are committed, open a PR that closes the issue:
 > ```
 > gh pr create --title "feat: <unit name>" --body "Closes #<number>"
 > ```
-> Then close the sub-issue: `gh issue close <number> --reason completed`"
+> Then close the issue: `gh issue close <number> --reason completed`"
 
-Agents are responsible for opening their PR and closing their own sub-issue on completion. Do not wait until the end of the pipeline.
+Agents on the GitHub path open their own PR and close their own issue on completion; do not defer this to the end of the pipeline.
 
-Wait for all units to complete before moving to quality gates. Mark the Implement task `completed`.
+Wait for all units across all waves to complete before moving to quality gates. Mark the Implement task `completed`.
 
 
 ## Phase 5: Verify
@@ -327,18 +359,26 @@ Mark the Final verify task `completed`.
 - Security findings and their resolutions
 - Any open limitations or recommended follow-up tasks
 
-**If `SHIP_GH_ENABLED=true`**, verify all sub-issues are closed and the epic reflects completion:
+**If `SHIP_GH_ENABLED=true`**, verify all sub-issues are closed and the epic reflects completion. Use the literal issue numbers you recorded in your notes — the `$EPIC_NUM`/`$SUB_ID` shell variables from Phase 3 are no longer in scope here.
+
+First, check that every sub-issue you created is closed. Listing by label is not enough — the epic itself also carries the `ship` label, so it would appear in the results. Check each sub-issue you recorded explicitly:
 
 ```bash
-# Check for any open sub-issues
-gh issue list --label "ship" --state open
-
-# Close the epic issue now that all sub-issues are done
-gh issue close $EPIC_NUM --reason completed
+# Replace with the actual sub-issue numbers you recorded in Phase 3.
+for n in <sub1> <sub2> <sub3>; do
+  printf '#%s: ' "$n"
+  gh issue view "$n" --json state -q .state
+done
 ```
 
-For any sub-issues still open, close them with a note:
+Close any sub-issue that is still open, with a brief note explaining why it was not completed via PR:
 
 ```bash
-gh issue close <number> --comment "<reason>" --reason "not planned"
+gh issue close <number> --comment "<reason it was not closed by its PR>" --reason "not planned"
+```
+
+Once all sub-issues are closed (single-unit tasks have only that one issue and no epic — stop here), close the epic using its recorded number:
+
+```bash
+gh issue close <EPIC_NUM> --reason completed
 ```
