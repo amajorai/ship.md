@@ -4,6 +4,21 @@ A thin, structured workflow for shipping features with Claude Code. Not a full-b
 
 Simple, minimal, lean. One interview, one plan, ship the thing.
 
+## Works great with
+
+- 🪅 **[vibe.md](https://github.com/amajorai/vibe.md)** to spin up your production server, deploy pipeline, and scaffold your project before you start shipping.
+- 🎉 **[party.md](https://github.com/amajorai/party.md)** to run ship.md autonomously 24/7. Drop issues into a GitHub Projects board; party.md picks them up and delegates building to `/ship` automatically.
+- ⚡ **[amajorai/skills](https://github.com/amajorai/skills)** for edge cases, E2E, payments, auth, SEO, icons, CI, observability, and 20+ more.
+
+## Skills
+
+| Skill | What it does |
+|-------|-------------|
+| [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify. Optionally creates atomic GitHub issues per unit (asked during interview) |
+| [`/ship-fast`](skills/ship-fast/SKILL.md) | Lightweight 5-phase flow for simple features. Skips security review, edge cases, and simplification |
+
+## How it works
+
 ```mermaid
 flowchart TD
     subgraph sf["⚡ /ship-fast"]
@@ -19,19 +34,6 @@ flowchart TD
     H --> I["🔒 Security Review (Sonnet)\n/security-review: HIGH/CRITICAL fixed"]
     I --> J["🏁 Final Verify (Sonnet)\n/goal: clean deployable state confirmed"]
 ```
-
-## Works great with
-
-- 🪅 **[vibe.md](https://github.com/amajorai/vibe.md)** to spin up your production server, deploy pipeline, and scaffold your project before you start shipping.
-- 🎉 **[party.md](https://github.com/amajorai/party.md)** to run ship.md autonomously 24/7. Drop issues into a GitHub Projects board; party.md picks them up and delegates building to `/ship` automatically.
-- ⚡ **[amajorai/skills](https://github.com/amajorai/skills)** for edge cases, E2E, payments, auth, SEO, icons, CI, observability, and 20+ more.
-
-## Skills
-
-| Skill | What it does |
-|-------|-------------|
-| [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify. Optionally creates atomic GitHub issues per unit (asked during interview) |
-| [`/ship-fast`](skills/ship-fast/SKILL.md) | Lightweight 5-phase flow for simple features. Skips security review, edge cases, and simplification |
 
 ## GitHub issue tracking
 
