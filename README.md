@@ -62,7 +62,7 @@ Starting from scratch with no VPS, deploy pipeline, or project scaffolded? Check
 
 - `/model opusplan`: Opus for planning, auto-switches to Sonnet for execution
 - `/batch`: parallel implementation across isolated git worktrees
-- `/goal`: autonomous quality loops for verify, simplify, and security phases
+- `/goal` behavior: verify, simplify, and final verify phases replicate `/goal`'s external-evaluator loop — one agent pass per iteration, the orchestrator evaluates the result (the role Haiku plays in `/goal`), and spawns another pass with failure context if unmet. `/goal` can't be invoked programmatically from within a skill, so this is the equivalent.
 - `/security-review`: built-in security audit
 - `/edge-cases`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 6, optional)
 - `/e2e`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 7, optional)

@@ -319,19 +319,26 @@ Mark the Verify task `in_progress`. If `SHIP_GH_ENABLED=true` and an epic exists
 gh issue edit <EPIC_NUM> --add-label "✅ verify"
 ```
 
-Spawn an autonomous `Agent` with the following goal condition (adapt to the specific task). Instruct it to iterate — running tests, fixing failures, re-checking criteria — until everything passes, then return its result:
+This phase replicates `/goal` behavior: rather than instructing an agent to loop internally until done, you (the orchestrator) act as the external evaluator — the same role Haiku plays in `/goal`. Each pass does one round of work and reports back; you evaluate the results and decide whether to run another pass or proceed.
 
+**Condition to satisfy:**
 ```
 All acceptance criteria from Phase 1 are met. All existing tests pass. No linting errors or type errors. The feature works end-to-end including edge cases defined during Phase 1.
 ```
 
-**Loop bound (prevents an infinite fix/re-run cycle):** instruct the agent to make at most a bounded number of fix attempts — roughly 5 iterations, or fewer if it makes no measurable progress (the same test fails the same way twice in a row, or the failure count stops dropping). If it exhausts that budget without meeting the goal, it must stop and return a clear report of what still fails and why, rather than looping indefinitely. When the agent returns unmet, do not silently advance: surface the blocking failures to the user and get direction (fix manually, relax a criterion, or abort) before continuing.
+**Loop (max 5 passes):**
 
-If the repository has no test suite at all, "all existing tests pass" is vacuously satisfied — do not invent or scaffold a test framework here just to have something to run; verify the acceptance criteria by running the feature directly (the optional Phase 6/7 gates are where new tests get added). If linting or type-checking is also absent, skip those checks rather than treating their absence as a failure.
+1. Spawn an `Agent` for a single verification pass. The agent must: run the full test suite, run lint and type checks, smoke-test the feature end-to-end, and return a structured report of which acceptance criteria pass, which fail, and the exact error output for each failure.
+2. After the agent returns, YOU evaluate its report against the acceptance criteria from Phase 1 — do not rely on the agent's own assessment of whether it's done.
+3. If all criteria pass: proceed to the next phase.
+4. If criteria fail and passes remain: spawn another agent, giving it the previous report as context — "the previous pass found these failures: `<failures>`. Fix them." — and repeat from step 1.
+5. If 5 passes are exhausted without all criteria passing: surface the blocking failures to the user and get direction (fix manually, relax a criterion, or abort) before continuing.
 
-If spawning an agent is not suitable, invoke the `verify` skill using the `Skill` tool. Pass the acceptance criteria and changed files as args so the skill knows what to check: `Skill({ skill: "verify", args: "<acceptance criteria + changed files>" })`.
+If the repository has no test suite, "all existing tests pass" is vacuously satisfied — do not invent a test framework; verify criteria by running the feature directly. If linting or type-checking is absent, skip those checks.
 
-Do not proceed until every criterion passes (or the user explicitly accepts an unmet criterion per the loop-bound guidance above). If `SHIP_GH_ENABLED=true` and an epic exists:
+If spawning an agent is not suitable, invoke the `verify` skill: `Skill({ skill: "verify", args: "<acceptance criteria + changed files>" })`.
+
+Do not proceed until every criterion passes. If `SHIP_GH_ENABLED=true` and an epic exists:
 
 ```bash
 gh issue edit <EPIC_NUM> --remove-label "✅ verify"
@@ -400,13 +407,21 @@ Mark the Simplify task `in_progress`. If `SHIP_GH_ENABLED=true` and an epic exis
 gh issue edit <EPIC_NUM> --add-label "✂️ simplify"
 ```
 
-Spawn an autonomous `Agent` with the following goal condition. Instruct it to iterate — removing dead code, flattening unnecessary abstractions, simplifying logic — until the condition is met, then return:
+This phase uses the same external-evaluator loop as Phase 5. One simplification pass per agent; you evaluate whether the condition is met before deciding to run another.
 
+**Condition to satisfy:**
 ```
 All code added or modified for this task is as simple as possible. No unnecessary abstractions, dead code, over-engineered patterns, or speculative generality. Every line serves a concrete current requirement. All existing tests still pass.
 ```
 
-**Loop bound (prevents an infinite simplify/re-test cycle):** instruct the agent to make at most a bounded number of simplification passes — roughly 5 iterations, or fewer once each new pass yields no further safe simplification. Correctness always wins over simplicity: if a simplification breaks a test, the agent reverts that specific change rather than continuing to chase it. If after a pass the tests cannot be made to pass again, the agent must revert to the last green state and return a report of what it could not safely simplify — it must never leave the tree with failing tests, and must never loop indefinitely trying to make a broken simplification work. Treat "all existing tests still pass" as a hard gate: the phase ends in a state where they do, even if that means accepting less simplification.
+**Loop (max 5 passes):**
+
+1. Spawn an `Agent` for a single simplification pass. The agent must: remove dead code, flatten unnecessary abstractions, simplify logic — then run the full test suite and report what it simplified and whether tests pass.
+2. After the agent returns, YOU evaluate: are there still obvious simplifications remaining, and do tests pass?
+3. If the condition is satisfied (no further safe simplification, tests green): proceed.
+4. If simplifications remain and passes are left: spawn another agent with the previous report as context and repeat from step 1.
+5. If tests are broken after a pass: spawn a recovery agent — "the previous simplification pass broke tests: `<failures>`. Revert the breaking changes only, keep the rest." Then proceed once green.
+6. If 5 passes are exhausted: accept the current state as long as tests pass. Hard gate: never leave this phase with failing tests.
 
 If `SHIP_GH_ENABLED=true` and an epic exists:
 
@@ -450,7 +465,7 @@ Mark the Security review task `completed`.
 
 ## Phase 10: Final Verify
 
-Mark the Final verify task `in_progress`. Run the verification exactly the way you ran it in Phase 5 — using the same mechanism you chose there: if Phase 5 used an autonomous `Agent`, spawn a fresh `Agent` here with the goal condition below (and the same loop bound as Phase 5); if Phase 5 used the `verify` skill, invoke it again here with `Skill({ skill: "verify", args: "<acceptance criteria + all files changed across Phases 4–9>" })`. Either way the goal is to confirm the codebase is shippable after hardening, simplification, and security fixes:
+Mark the Final verify task `in_progress`. Run the same external-evaluator loop as Phase 5 against this condition:
 
 1. All original acceptance criteria still pass
 2. No regressions from Phase 6 (edge cases), if it ran
@@ -459,7 +474,11 @@ Mark the Final verify task `in_progress`. Run the verification exactly the way y
 5. No regressions from Phase 9 (security)
 6. Application is in a clean, deployable state
 
-If verification comes back unmet, handle it the same way as Phase 5 (surface the blocking failures to the user and get direction before declaring the work shippable). Mark the Final verify task `completed`.
+Spawn an agent per pass (max 5), evaluate the report yourself after each pass, spawn another with failure context if unmet — same loop as Phase 5. If unmet after 5 passes, surface blocking failures to the user before declaring the work shippable.
+
+If spawning an agent is not suitable, invoke: `Skill({ skill: "verify", args: "<acceptance criteria + all files changed across Phases 4–9>" })`.
+
+Mark the Final verify task `completed`.
 
 
 ## Completion Report

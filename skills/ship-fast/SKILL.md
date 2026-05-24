@@ -87,13 +87,19 @@ Wait for all units to complete before moving to verification. Mark the Implement
 
 ## Phase 5: Verify
 
-Mark the Verify task `in_progress`. Spawn an autonomous `Agent` with the following goal condition (adapt to the specific task). Instruct it to iterate — running tests, fixing failures, re-checking criteria — until everything passes, then return its result:
+Mark the Verify task `in_progress`. This phase replicates `/goal` behavior: one agent pass per iteration, you (the orchestrator) evaluate the result, spawn another pass with failure context if unmet.
 
-```
-All acceptance criteria from Phase 1 are met. All existing tests pass. No linting errors or type errors. The feature works end-to-end including edge cases defined during Phase 1.
-```
+**Condition:** All acceptance criteria from Phase 1 are met. All existing tests pass. No linting errors or type errors. The feature works end-to-end.
 
-If spawning an agent is not suitable, invoke the `verify` skill using the `Skill` tool: `Skill({skill: "verify"})`.
+**Loop (max 5 passes):**
+
+1. Spawn an `Agent` for a single verification pass — run tests, lint, type checks, smoke-test the feature, return a structured report of what passes and what fails.
+2. YOU evaluate the report against the acceptance criteria.
+3. If all pass: proceed.
+4. If failures remain and passes are left: spawn another agent with the failure report as context and repeat.
+5. If 5 passes exhausted: surface blocking failures to the user before continuing.
+
+If spawning an agent is not suitable: `Skill({ skill: "verify", args: "<acceptance criteria + changed files>" })`.
 
 Do not proceed until every criterion passes. Mark the Verify task `completed`.
 
