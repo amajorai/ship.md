@@ -1,14 +1,14 @@
 # 📦 ship.md
 
+A thin, structured workflow for shipping features with Claude Code. Not a full-blown framework like [GSD](https://github.com/gsd-build/get-shit-done) or [bmad-method](https://github.com/bmad-method/bmad-method). Just a wrapper around Claude Code's own built-in commands (`/batch`, `/goal`, `/model`, `/security-review`) that adds structure, quality gates, and optional GitHub issue tracking so nothing falls through the cracks.
+
+Simple, minimal, lean. One interview, one plan, ship the thing.
+
 [![Stars](https://shieldcn.dev/github/stars/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
 [![Forks](https://shieldcn.dev/github/forks/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
 [![License](https://shieldcn.dev/github/license/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
 [![Issues](https://shieldcn.dev/github/issues/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md/issues)
 [![Release](https://shieldcn.dev/github/release/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md/releases)
-
-A thin, structured workflow for shipping features with Claude Code. Not a full-blown framework like [GSD](https://github.com/gsd-build/get-shit-done) or [bmad-method](https://github.com/bmad-method/bmad-method). Just a wrapper around Claude Code's own built-in commands (`/batch`, `/goal`, `/model`, `/security-review`) that adds structure, quality gates, and optional GitHub issue tracking so nothing falls through the cracks.
-
-Simple, minimal, lean. One interview, one plan, ship the thing.
 
 ## Works great with
 
