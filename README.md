@@ -23,7 +23,7 @@ flowchart TD
 ## Works great with
 
 - 🪅 **[vibe.md](https://github.com/amajorai/vibe.md)** to spin up your production server, deploy pipeline, and scaffold your project before you start shipping.
-- 🌈 **[rainbow.md](https://github.com/amajorai/rainbow.md)** to run ship.md autonomously 24/7. Drop issues into a GitHub Projects board; rainbow.md picks them up and delegates building to `/ship` automatically.
+- 🎉 **[party.md](https://github.com/amajorai/party.md)** to run ship.md autonomously 24/7. Drop issues into a GitHub Projects board; party.md picks them up and delegates building to `/ship` automatically.
 
 ## Skills
 
@@ -102,4 +102,4 @@ Auto-update is **disabled by default**. Skills do not self-update unless you exp
 
 Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
 
-Part of [amajorai/skills](https://github.com/amajorai/skills). For more skills check out the full collection.
+More Claude Code skills at **[amajorai/skills](https://github.com/amajorai/skills)**: edge cases, E2E, payments, auth, SEO, icons, CI, observability, and 20+ more.
