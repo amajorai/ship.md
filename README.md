@@ -1,5 +1,11 @@
 # 📦 ship.md
 
+[![Stars](https://shieldcn.dev/github/stars/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
+[![Forks](https://shieldcn.dev/github/forks/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
+[![License](https://shieldcn.dev/github/license/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
+[![Issues](https://shieldcn.dev/github/issues/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md/issues)
+[![Release](https://shieldcn.dev/github/release/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md/releases)
+
 A thin, structured workflow for shipping features with Claude Code. Not a full-blown framework like [GSD](https://github.com/gsd-build/get-shit-done) or [bmad-method](https://github.com/bmad-method/bmad-method). Just a wrapper around Claude Code's own built-in commands (`/batch`, `/goal`, `/model`, `/security-review`) that adds structure, quality gates, and optional GitHub issue tracking so nothing falls through the cracks.
 
 Simple, minimal, lean. One interview, one plan, ship the thing.
@@ -104,4 +110,14 @@ Auto-update is **disabled by default**. Skills do not self-update unless you exp
 ```
 
 Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
+
+## Star History
+
+<a href="https://www.star-history.com/#amajorai/ship.md&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=amajorai/ship.md&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=amajorai/ship.md&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=amajorai/ship.md&type=Date" />
+ </picture>
+</a>
 
