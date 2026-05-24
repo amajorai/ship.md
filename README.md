@@ -20,9 +20,10 @@ flowchart TD
     I --> J["🏁 Final Verify (Sonnet)\n/goal: clean deployable state confirmed"]
 ```
 
-## Need a dev environment first?
+## Works great with
 
-Starting from scratch with no VPS, deploy pipeline, or project scaffolded? Check out **[vibe.md](https://github.com/amajorai/vibe.md)**. One interview spins up a Hetzner/OVH/AWS server, installs Bun + GitHub CLI, deploys Dokploy or Coolify, scaffolds a Better T Stack project, and wires up auto-deploy. Once you're set up, come back here and `/ship` your first feature.
+- 🪅 **[vibe.md](https://github.com/amajorai/vibe.md)** to spin up your production server, deploy pipeline, and scaffold your project before you start shipping.
+- 🌈 **[rainbow.md](https://github.com/amajorai/rainbow.md)** to run ship.md autonomously 24/7. Drop issues into a GitHub Projects board; rainbow.md picks them up and delegates building to `/ship` automatically.
 
 ## Skills
 
