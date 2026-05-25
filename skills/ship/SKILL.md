@@ -10,8 +10,6 @@ You are orchestrating a comprehensive, quality-focused development pipeline. Wor
 
 **Task:** {{args}}
 
-> **Note on quality gates:** Phases 5, 8, and 10 use an orchestrator-driven evaluator loop — not the `/goal` CLI command. `/goal` is a UI/CLI stop hook and cannot be invoked via the `Skill` tool. See [references/goal-loop-notes.md](references/goal-loop-notes.md) for the architectural rationale and a comparison of the two approaches.
-
 
 ## Phase 0: Auto-Update (opt-in)
 
