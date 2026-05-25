@@ -87,21 +87,14 @@ Wait for all units to complete before moving to verification. Mark the Implement
 
 ## Phase 5: Verify
 
-Mark the Verify task `in_progress`. This phase replicates `/goal` behavior: one agent pass per iteration, you (the orchestrator) evaluate the result, spawn another pass with failure context if unmet.
+Mark the Verify task `in_progress`. Run an in-session goal loop (max 5 passes) — do not spawn a subagent:
 
-**Condition:** All acceptance criteria from Phase 1 are met. All existing tests pass. No linting errors or type errors. The feature works end-to-end.
+1. Run the full test suite, lint/typecheck, and smoke-test end-to-end yourself using Bash.
+2. Evaluate the output against each Phase 1 acceptance criterion.
+3. All criteria pass → proceed. Failures remain → fix them directly (edit files, re-run), count as one pass.
+4. After 5 passes with failures → surface to user for direction before continuing.
 
-**Loop (max 5 passes):**
-
-1. Spawn an `Agent` for a single verification pass — run tests, lint, type checks, smoke-test the feature, return a structured report of what passes and what fails.
-2. YOU evaluate the report against the acceptance criteria.
-3. If all pass: proceed.
-4. If failures remain and passes are left: spawn another agent with the failure report as context and repeat.
-5. If 5 passes exhausted: surface blocking failures to the user before continuing.
-
-If spawning an agent is not suitable: `Skill({ skill: "verify", args: "<acceptance criteria + changed files>" })`.
-
-Do not proceed until every criterion passes. Mark the Verify task `completed`.
+Mark the Verify task `completed`.
 
 
 ## Completion Report
