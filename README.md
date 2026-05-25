@@ -72,7 +72,7 @@ flowchart TD
 
 - `/model opusplan`: Opus for planning, auto-switches to Sonnet for execution
 - `/batch`: parallel implementation across isolated git worktrees
-- `/goal` behavior: verify, simplify, and final verify phases replicate `/goal`'s external-evaluator loop — one agent pass per iteration, the orchestrator evaluates the result (the role Haiku plays in `/goal`), and spawns another pass with failure context if unmet. `/goal` can't be invoked programmatically from within a skill, so this is the equivalent.
+- `/goal` behavior: verify, simplify, and final verify phases replicate `/goal` by looping **in the same session** — run tests, evaluate against acceptance criteria, fix directly, repeat (max 5 passes). No subagents. This is what `/goal` does: keeps Claude in the same context, iterating until the condition is met. `/goal` itself can't be invoked programmatically from within a skill (it's a UI/CLI stop hook, not a `Skill` tool call), so the skill implements the equivalent pattern directly.
 - `/security-review`: built-in security audit
 - `/edge-cases`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 6, optional)
 - `/e2e`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 7, optional)

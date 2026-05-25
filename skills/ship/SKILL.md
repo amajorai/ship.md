@@ -116,14 +116,12 @@ After all waves complete, mark Implement `completed`.
 
 ## Phase 5: Verify
 
-Mark Verify `in_progress`. Run external-evaluator loop (max 5 passes):
+Mark Verify `in_progress`. Run an in-session goal loop (max 5 passes) — do not spawn a subagent:
 
-1. Spawn an agent: run full test suite, lint/typecheck, smoke-test end-to-end, return structured report of which acceptance criteria pass/fail with exact error output.
-2. YOU evaluate the report against Phase 1 acceptance criteria — do not rely on the agent's self-assessment.
-3. All criteria pass → proceed. Criteria fail + passes remain → spawn another agent with failure context.
+1. Run the full test suite, lint/typecheck, and smoke-test end-to-end yourself using Bash.
+2. Evaluate the output against each Phase 1 acceptance criterion.
+3. All criteria pass → proceed. Failures remain → fix them directly (edit files, re-run), count as one pass.
 4. After 5 passes with failures → surface to user for direction before continuing.
-
-If spawning an agent is not suitable: `Skill({ skill: "verify", args: "<acceptance criteria + changed files>" })`.
 
 Mark Verify `completed`.
 
@@ -156,15 +154,14 @@ All tests must pass before proceeding. Mark E2E tests `completed`.
 
 ## Phase 8: Simplify
 
-Mark Simplify `in_progress`. Run external-evaluator loop (max 5 passes):
+Mark Simplify `in_progress`. Run an in-session goal loop (max 5 passes) — do not spawn a subagent:
 
 **Condition:** All code added or modified is as simple as possible. No unnecessary abstractions, dead code, over-engineering, or speculative generality. Every line serves a concrete current requirement. All existing tests still pass.
 
-1. Spawn an agent: remove dead code, flatten abstractions, simplify logic, run tests, report.
-2. YOU evaluate: further safe simplification remaining + tests green?
-3. Condition satisfied → proceed. Still simplifiable + passes left → spawn with previous report.
-4. Tests broken after a pass → spawn recovery agent to revert only the breaking changes.
-5. Hard gate: never leave this phase with failing tests.
+1. Review modified files yourself: remove dead code, flatten abstractions, simplify logic.
+2. Run tests. Green + no further simplification needed → condition met, proceed.
+3. Tests break → revert only the breaking change, re-evaluate.
+4. Hard gate: never leave this phase with failing tests.
 
 Mark Simplify `completed`.
 
@@ -188,15 +185,13 @@ Mark Security review `completed`.
 
 ## Phase 10: Final Verify
 
-Mark Final verify `in_progress`. Same external-evaluator loop as Phase 5 against this condition:
+Mark Final verify `in_progress`. Same in-session goal loop as Phase 5 (max 5 passes) against:
 
 1. All original acceptance criteria still pass
 2. No regressions from Phases 6–9
 3. Application is in a clean, deployable state
 
-Max 5 passes. Surface blocking failures to user if unmet after 5.
-
-If not spawning an agent: `Skill({ skill: "verify", args: "<acceptance criteria + all files changed across Phases 4–9>" })`.
+Surface blocking failures to user if unmet after 5 passes.
 
 Mark Final verify `completed`.
 
