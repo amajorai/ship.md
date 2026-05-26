@@ -55,13 +55,26 @@ flowchart TD
 | Command | Phase | What it does |
 |---------|-------|-------------|
 | `/model opusplan` | Plan | Switches to Opus for planning, auto-returns to Sonnet for execution |
-| `/batch` (inline) | Implement | Can't be invoked programmatically — ship replicates it by spawning parallel Agent calls per implementation unit |
+| `/batch` (inline) | Implement | Can't be invoked programmatically — ship replicates it using [references/parallel-implement.md](skills/ship/references/parallel-implement.md) |
 | `/goal` (inline) | Verify + Final Verify | In-session loop: run tests, evaluate criteria, fix directly, repeat (max 5 passes) — see below |
 | `/edge-cases` | Edge Cases (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — 8 parallel subagents across boundary categories |
 | `/e2e` | E2E Tests (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — Playwright or Maestro, with Computer Use fallback |
 | `/code-review` | Code Review | Built-in audit — fix CONFIRMED + PLAUSIBLE findings before proceeding |
 | `/security-review` | Security Review | Built-in audit — all HIGH/CRITICAL findings fixed before proceeding |
 | `TaskCreate` / `TaskUpdate` | All phases | Claude Code's built-in todos — one task per phase, blocked in sequence, visible live in the task UI |
+
+## Parallel implementation
+
+Phase 4 (Implement) dispatches units in parallel using one of two modes. The mode is chosen during the Phase 1+2 interview. The full instructions live in [`skills/ship/references/parallel-implement.md`](skills/ship/references/parallel-implement.md).
+
+| Mode | When | PR strategy |
+|------|------|-------------|
+| **A - Isolated Worktrees** | Units have no shared files | One PR per unit (mirrors `/batch` exactly) |
+| **B - Shared Workspace** | Units share files or types | One PR for the whole branch |
+
+**Mode A** mirrors `/batch` exactly: decompose into 5–30 self-contained units, discover an E2E recipe, then spawn one background agent per unit in a single message block (`isolation: "worktree"`, `run_in_background: true`). Each agent implements, runs code-review + unit tests + E2E, commits, pushes, and opens a PR. A status table tracks progress and PR links as agents complete.
+
+**Mode B** uses a dependency-wave model: wave 1 has no blockers (foundational types, schema, utilities); each subsequent wave depends on the previous. All units in the current wave run in parallel; the coordinator waits for all before dispatching the next. Agents commit only — no PRs. The coordinator opens a single PR covering the full branch after all waves finish.
 
 ## /goal loop — how it works
 
