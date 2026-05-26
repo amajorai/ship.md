@@ -61,7 +61,7 @@ flowchart TD
 | `/e2e` | E2E Tests (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — Playwright or Maestro, with Computer Use fallback |
 | `/code-review` | Code Review | Built-in audit — fix CONFIRMED + PLAUSIBLE findings before proceeding |
 | `/security-review` | Security Review | Built-in audit — all HIGH/CRITICAL findings fixed before proceeding |
-| `TaskCreate` / `TaskUpdate` | All phases | One task per phase, blocked in sequence — visible live in Claude Code's task UI |
+| `TaskCreate` / `TaskUpdate` | All phases | Claude Code's built-in todos — one task per phase, blocked in sequence, visible live in the task UI |
 
 ## /goal loop — how it works
 
