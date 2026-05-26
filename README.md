@@ -15,10 +15,10 @@ Simple, minimal, lean. Explore first, ask only what the codebase can't answer, t
 
 ## Works great with
 
+- 🔎 **[fix.md](https://github.com/amajorai/fix.md)** when something breaks after shipping. `/fix` instruments the code with targeted logs, reads them to confirm root cause, and makes a surgical fix.
 - 🪅 **[vibe.md](https://github.com/amajorai/vibe.md)** to spin up your production server, deploy pipeline, and scaffold your project before you start shipping.
 - 🎉 **[party.md](https://github.com/amajorai/party.md)** to run ship.md autonomously 24/7. Drop issues into a GitHub Projects board; party.md picks them up and delegates building to `/ship` automatically.
 - 🎬 **[replay.md](https://github.com/amajorai/replay.md)** to record video proof of your feature working — browser automation, VNC, or Computer Use — and share the link straight from chat.
-- 🔎 **[fix.md](https://github.com/amajorai/fix.md)** when something breaks after shipping. `/fix` instruments the code with targeted logs, reads them to confirm root cause, and makes a surgical fix.
 - ⚡ **[amajorai/skills](https://github.com/amajorai/skills)** for edge cases, E2E, payments, auth, SEO, icons, CI, observability, and 20+ more.
 
 ## Skills
