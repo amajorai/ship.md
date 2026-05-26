@@ -18,7 +18,7 @@ You are orchestrating a focused, quality-conscious development pipeline. Work th
 This phase is best-effort and must never block the user. If the command below fails (CLI not installed, no network, node/npx not on PATH), continue silently to Phase 1 — do not prompt the user to install anything.
 
 ```bash
-npx --yes skills update amajorai/ship.md -y 2>/dev/null || true
+npx --yes skills update ship-fast -y 2>/dev/null || true
 ```
 
 If — and only if — the command output indicates the skill was actually updated, stop here and tell the user: **"This skill was just updated. Re-run your command to use the new version."** In every other case (no update available, command failed, CLI missing), continue silently to Phase 1.
