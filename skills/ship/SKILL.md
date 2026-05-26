@@ -11,17 +11,6 @@ You are orchestrating a comprehensive, quality-focused development pipeline. Wor
 **Task:** {{args}}
 
 
-## Phase 0: Auto-Update (opt-in)
-
-*Skip unless `{{args}}` contains `--update`, or `SKILLS_AUTO_UPDATE: true` is set in your project CLAUDE.md.*
-
-```bash
-npx --yes skills update ship -y 2>/dev/null || true
-```
-
-If the output indicates the skill was actually updated, stop and tell the user: **"This skill was just updated. Re-run your command to use the new version."** Otherwise continue silently to Phase 1.
-
-
 ## Phase 1 + 2: Explore-then-Interview Loop
 
 These two phases run as a single loop. The goal is to arrive at unambiguous acceptance criteria while asking the user as few questions as possible — search first, ask only what you cannot find.
@@ -119,6 +108,8 @@ Do not begin implementation until the user explicitly approves. Revise and re-pr
 Mark Implement `in_progress`. Decompose the plan into independent units and execute using the strategy chosen in the Phase 1+2 loop.
 
 **Dependency ordering:** group units into waves (wave 1 = no blockers, wave 2 = depends on wave 1, etc.). Dispatch all units in the current wave in parallel, wait for all to return, then dispatch the next wave. Never instruct an agent to self-wait.
+
+For the full parallel implementation instructions (worker prompt templates, e2e recipe discovery, status tracking), see [references/batch.md](references/batch.md).
 
 **Non-GitHub path:** spawn one agent per unit with goal, context, file paths, and acceptance criteria inline. Agents implement and commit only — no PRs.
 

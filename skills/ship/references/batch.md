@@ -1,4 +1,6 @@
-# Parallel Implementation Reference
+# Batch Reference
+
+> This is the original Claude Code `/batch` skill prompt, reproduced verbatim below as Mode A. Mode B (shared workspace) is an extension added by ship.md for tasks where units share files.
 
 Two modes depending on the strategy chosen in the Phase 1+2 loop.
 

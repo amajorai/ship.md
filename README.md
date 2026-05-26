@@ -55,7 +55,7 @@ flowchart TD
 | Command | Phase | What it does |
 |---------|-------|-------------|
 | `/model opusplan` | Plan | Switches to Opus for planning, auto-returns to Sonnet for execution |
-| `/batch` (inline) | Implement | Can't be invoked programmatically — ship replicates it using [references/parallel-implement.md](skills/ship/references/parallel-implement.md) |
+| `/batch` (inline) | Implement | Can't be invoked programmatically — ship replicates it using [references/batch.md](skills/ship/references/batch.md) |
 | `/goal` (inline) | Verify + Final Verify | In-session loop: run tests, evaluate criteria, fix directly, repeat (max 5 passes) — see below |
 | `/edge-cases` | Edge Cases (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — 8 parallel subagents across boundary categories |
 | `/e2e` | E2E Tests (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — Playwright or Maestro, with Computer Use fallback |
@@ -65,7 +65,7 @@ flowchart TD
 
 ## Parallel implementation
 
-Phase 4 (Implement) dispatches units in parallel using one of two modes. The mode is chosen during the Phase 1+2 interview. The full instructions live in [`skills/ship/references/parallel-implement.md`](skills/ship/references/parallel-implement.md).
+Phase 4 (Implement) dispatches units in parallel using one of two modes. The mode is chosen during the Phase 1+2 interview. The full instructions live in [`skills/ship/references/batch.md`](skills/ship/references/batch.md).
 
 | Mode | When | PR strategy |
 |------|------|-------------|
@@ -161,11 +161,11 @@ or for something quick:
 /ship-fast fix the typo in the onboarding copy
 ```
 
-### Auto-Update
+### Update
 
-Auto-update is **disabled by default**. Skills do not self-update unless you explicitly opt in (supply chain hygiene). To enable, pass `--update` to your command or set `SKILLS_AUTO_UPDATE: true` in your project CLAUDE.md.
-
-`/ship` also checks whether its optional dependencies (`/edge-cases` and `/e2e`) are installed and offers to fetch them from [amajorai/skills](https://github.com/amajorai/skills) if missing.
+```bash
+npx skills update ship -y
+```
 
 ### Claude Code plugin
 
