@@ -50,7 +50,7 @@ flowchart TD
     style sf fill:#1a1a2e,stroke:#4a4a8a
 ```
 
-## Commands used
+## Claude Code commands used
 
 | Command | Phase | What it does |
 |---------|-------|-------------|
@@ -63,7 +63,7 @@ flowchart TD
 | `/security-review` | Security Review | Built-in audit — all HIGH/CRITICAL findings fixed before proceeding |
 | `TaskCreate` / `TaskUpdate` | All phases | Claude Code's built-in todos — one task per phase, blocked in sequence, visible live in the task UI |
 
-## Parallel implementation
+## /batch
 
 Phase 4 (Implement) dispatches units in parallel using one of two modes. The mode is chosen during the Phase 1+2 interview. The full instructions live in [`skills/ship/references/batch.md`](skills/ship/references/batch.md).
 
@@ -76,7 +76,7 @@ Phase 4 (Implement) dispatches units in parallel using one of two modes. The mod
 
 **Mode B** uses a dependency-wave model: wave 1 has no blockers (foundational types, schema, utilities); each subsequent wave depends on the previous. All units in the current wave run in parallel; the coordinator waits for all before dispatching the next. Agents commit only — no PRs. The coordinator opens a single PR covering the full branch after all waves finish.
 
-## /goal loop — how it works
+## /goal loop
 
 `/goal` is a Claude Code CLI stop hook, not a programmatic command — it can't be invoked from inside a skill via `Skill({ skill: "goal" })`. Ship replicates its behavior directly in-session for the Verify and Final Verify phases.
 
@@ -101,7 +101,9 @@ flowchart LR
 
 Both stay in the **same session** (no subagents, full context retained) and fix directly without hand-off. The difference: `/goal` has no pass cap and is user-initiated. Ship's loop caps at 5 passes and escalates to the user on failure rather than looping forever.
 
-## GitHub deployment checks
+## GitHub integration
+
+### Deployment checks
 
 Both `/ship` and `/ship-fast` can poll your CI/CD deployment after the verify phase(s). Opt in during the interview.
 
@@ -118,7 +120,7 @@ gh api "repos/{owner}/{repo}/deployments/{id}/statuses?per_page=1" --jq '.[0].st
 
 `/ship` runs this check at the end of both Phase 5 (Verify) and Phase 10 (Final Verify).
 
-## GitHub issue tracking
+### Issue tracking
 
 `/ship` can create and manage GitHub issues throughout the pipeline. Opt in during the interview. When enabled:
 

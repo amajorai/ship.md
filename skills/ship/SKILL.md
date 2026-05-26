@@ -113,7 +113,7 @@ For the full parallel implementation instructions (worker prompt templates, e2e 
 
 **Non-GitHub path:** spawn one agent per unit with goal, context, file paths, and acceptance criteria inline. Agents implement and commit only — no PRs.
 
-**GitHub path:** each agent gets its issue URL. For prompt templates (shared workspace vs isolated worktrees), see [references/agent-prompts.md](references/agent-prompts.md). After all shared-workspace waves finish, open a single PR covering all issues.
+**GitHub path:** each agent gets its issue URL. For prompt templates (shared workspace vs isolated worktrees), see [references/batch.md](references/batch.md#github-path). After all shared-workspace waves finish, open a single PR covering all issues.
 
 After all waves complete, mark Implement `completed`.
 

@@ -4,8 +4,6 @@
 
 If the plan is a single atomic unit, skip the epic hierarchy. Create one issue using the sub-issue template below (its "Blocked by" = "none"), record its number/URL, tell the user, and proceed. Skip Steps 1, 3, and 4 entirely.
 
----
-
 ## Step 1: Create the parent epic issue
 
 ```

@@ -1,10 +1,8 @@
-# Batch Reference
+# /batch Reference
 
-> This is the original Claude Code `/batch` skill prompt, reproduced verbatim below as Mode A. Mode B (shared workspace) is an extension added by ship.md for tasks where units share files.
+> This is the original Claude Code `/batch` skill prompt, reproduced verbatim below as Mode A. Mode B (shared workspace) and the GitHub path are extensions added by ship.md.
 
 Two modes depending on the strategy chosen in the Phase 1+2 loop.
-
----
 
 ## Mode A: Isolated Worktrees (one PR per unit)
 
@@ -61,8 +59,6 @@ After launching, render a status table and update it as agents complete:
 
 Parse `PR: <url>` from each agent result. Re-render with `done` / `failed` and PR links. When all done, render final table and a one-line summary (e.g., "8/10 units landed as PRs").
 
----
-
 ## Mode B: Shared Workspace (one PR for everything)
 
 Use when: the user chose shared workspace, or units share files/types that would cause merge conflicts in worktrees.
@@ -92,8 +88,30 @@ Each agent prompt must include:
 
 ### After all waves
 
-Once all waves complete, one person (the coordinator, in-session) opens a single PR covering the full branch:
+Once all waves complete, open a single PR covering the full branch:
 
 ```bash
 gh pr create --title "<overall feature title>" --body "<summary of all units>"
+```
+
+## GitHub path
+
+When `SHIP_GH_ENABLED=true`, each agent gets its GitHub issue URL instead of inline task descriptions.
+
+**Isolated worktrees agent prompt:**
+
+> "Your task is fully specified in this GitHub issue: `<issue URL>`. Read the Goal, Task, Context, Acceptance Criteria, and Notes before writing any code. (Your orchestrator has already confirmed that everything this unit depends on is complete — implement immediately; do not wait on other issues.) When all acceptance criteria are satisfied and your changes are committed, open a PR that closes the issue:
+> ```
+> gh pr create --title "feat: <unit name>" --body "Closes #<number>"
+> ```
+> Then close the issue: `gh issue close <number> --reason completed`"
+
+**Shared workspace agent prompt:**
+
+> "Your task is fully specified in this GitHub issue: `<issue URL>`. Read the Goal, Task, Context, Acceptance Criteria, and Notes before writing any code. (Your orchestrator has already confirmed that everything this unit depends on is complete — implement immediately; do not wait on other issues.) When all acceptance criteria are satisfied and your changes are committed, do NOT open a pull request (the orchestrator will open one covering the whole branch). Close your issue: `gh issue close <number> --reason completed`"
+
+After all shared-workspace waves finish, the orchestrator opens a single PR referencing every issue:
+
+```bash
+gh pr create --title "feat: <feature name>" --body "Closes #<sub1>, closes #<sub2>, closes #<sub3>"
 ```
