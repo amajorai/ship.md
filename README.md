@@ -13,6 +13,19 @@ Simple, minimal, lean. Explore first, ask only what the codebase can't answer, t
 > [!NOTE]
 > These skills have been built and tested with **Claude Code**. Codex support is untested. If you try them on Codex, we'd love your help. [Open an issue](https://github.com/amajorai/ship.md/issues) to share what works and what doesn't.
 
+## Claude Code commands used
+
+| Command | Phase | What it does |
+|---------|-------|-------------|
+| `/model opusplan` | Plan | Switches to Opus for planning, auto-returns to Sonnet for execution |
+| `/batch` (inline) | Implement | Can't be invoked programmatically — ship replicates it using [references/batch.md](skills/ship/references/batch.md) |
+| `/goal` (inline) | Verify + Final Verify | In-session loop: run tests, evaluate criteria, fix directly, repeat (max 5 passes) — see below |
+| `/edge-cases` | Edge Cases (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — 8 parallel subagents across boundary categories |
+| `/e2e` | E2E Tests (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — agent-browser, Playwright, or Maestro, with Computer Use fallback |
+| `/code-review` | Code Review | Built-in audit — fix CONFIRMED + PLAUSIBLE findings before proceeding |
+| `/security-review` | Security Review | Built-in audit — all HIGH/CRITICAL findings fixed before proceeding |
+| `TaskCreate` / `TaskUpdate` | All phases | Claude Code's built-in todos — one task per phase, blocked in sequence, visible live in the task UI |
+
 ## Works great with
 
 - 🔎 **[fix.md](https://github.com/amajorai/fix.md)** when something breaks after shipping. `/fix` instruments the code with targeted logs, reads them to confirm root cause, and makes a surgical fix.
@@ -26,7 +39,7 @@ Simple, minimal, lean. Explore first, ask only what the codebase can't answer, t
 | Skill | What it does |
 |-------|-------------|
 | [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: explore+interview loop (explore first, ask one question at a time only for what the codebase can't answer), plan, implement, verify, edge cases, e2e tests, code review, security review, final verify. Optionally creates atomic GitHub issues per unit |
-| [`/ship-fast`](skills/ship-fast/SKILL.md) | Lightweight 5-phase flow for simple features. Skips security review, edge cases, and simplification |
+| [`/ship-fast`](skills/ship-fast/SKILL.md) | Lightweight 4-phase flow for simple features. Explore-first interview, plan, implement, verify. Skips security review, edge cases, and E2E |
 
 ## How it works
 
@@ -49,19 +62,6 @@ flowchart TD
 
     style sf fill:#1a1a2e,stroke:#4a4a8a
 ```
-
-## Claude Code commands used
-
-| Command | Phase | What it does |
-|---------|-------|-------------|
-| `/model opusplan` | Plan | Switches to Opus for planning, auto-returns to Sonnet for execution |
-| `/batch` (inline) | Implement | Can't be invoked programmatically — ship replicates it using [references/batch.md](skills/ship/references/batch.md) |
-| `/goal` (inline) | Verify + Final Verify | In-session loop: run tests, evaluate criteria, fix directly, repeat (max 5 passes) — see below |
-| `/edge-cases` | Edge Cases (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — 8 parallel subagents across boundary categories |
-| `/e2e` | E2E Tests (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — Playwright or Maestro, with Computer Use fallback |
-| `/code-review` | Code Review | Built-in audit — fix CONFIRMED + PLAUSIBLE findings before proceeding |
-| `/security-review` | Security Review | Built-in audit — all HIGH/CRITICAL findings fixed before proceeding |
-| `TaskCreate` / `TaskUpdate` | All phases | Claude Code's built-in todos — one task per phase, blocked in sequence, visible live in the task UI |
 
 ## /batch
 
