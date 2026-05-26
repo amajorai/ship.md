@@ -52,6 +52,16 @@ npx --yes skills add amajorai/skills/skills/edge-cases -y && echo "EDGE_CASES_IN
 npx --yes skills add amajorai/skills/skills/e2e -y && echo "E2E_INSTALLED" || echo "E2E_INSTALL_FAILED"
 ```
 
+**If any skills were newly installed** (output contains `EDGE_CASES_INSTALLED` or `E2E_INSTALLED`), detect the running environment:
+
+```bash
+echo "CODEX=${CODEX:-false}"
+echo "CODEX_SANDBOX=${CODEX_SANDBOX:-}"
+```
+
+- **Codex mode** (`CODEX=true` or `CODEX_SANDBOX` is set): newly installed skills reload automatically — continue below.
+- **Claude Code mode**: tell the user: **"I've installed the missing skill(s). Please run `/reload-plugins` in this session so they become available, then reply here to continue."** Wait for the user's confirmation before proceeding.
+
 At the end of the interview, create tasks for every remaining phase with `TaskCreate`. Set `addBlockedBy` so each phase is blocked by the previous one. Skip tasks for opted-out phases.
 
 **Track in working memory (not shell variables):** quality gate choices + skill availability, implementation strategy, `SHIP_GH_ENABLED`, `SHIP_CHECK_GH_DEPLOYMENTS`, GitHub issue numbers/URLs.
