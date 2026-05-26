@@ -4,7 +4,7 @@ A thin, structured workflow for shipping features with Claude Code. Not a full-b
 
 Simple, minimal, lean. One interview, one plan, ship the thing.
 
-[![Status](https://shieldcn.dev/badge/status-experimental-orange.svg)](https://github.com/amajorai/ship.md)
+[![Status](https://shieldcn.dev/badge/status-beta-blue.svg)](https://github.com/amajorai/ship.md)
 [![Stars](https://shieldcn.dev/github/stars/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
 [![Forks](https://shieldcn.dev/github/forks/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
 [![License](https://shieldcn.dev/github/license/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
