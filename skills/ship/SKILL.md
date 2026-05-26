@@ -176,7 +176,11 @@ Mark E2E tests `in_progress`. Invoke the e2e skill with the feature area and the
 Skill({ skill: "e2e", args: "<feature area> — acceptance criteria: <criteria from Phase 1+2 loop>" })
 ```
 
-The e2e skill runs its own full pipeline (discover flows, set up Playwright or Maestro, write and run tests). **Do not mark this phase completed until you have confirmed from the skill's output that all tests actually passed** — read the skill's completion report and verify the pass/fail counts. If the skill returns without a clear pass confirmation, run the test suite yourself:
+The e2e skill runs its own full pipeline (discover flows, set up Playwright or Maestro, write and run tests). **Do not mark this phase completed until you have confirmed from the skill's output that all tests actually passed** — read the skill's completion report and verify the pass/fail counts.
+
+If the skill returns without a clear pass confirmation, or if neither Playwright nor Maestro is available, fall back to **Claude Computer Use** — drive the actual UI directly using your own vision: launch the app, walk through the critical user flows from the acceptance criteria, observe the results, and report pass/fail. Note in the phase summary that Computer Use was used.
+
+If none of the above is possible, run the test suite directly:
 
 ```bash
 bun run test:e2e 2>/dev/null || npx playwright test 2>/dev/null || maestro test e2e/ 2>/dev/null
