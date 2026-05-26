@@ -48,8 +48,8 @@ ls .claude/skills/edge-cases.md .claude/skills/e2e.md 2>/dev/null
 Install missing skills for opted-in gates (best-effort — skip that gate's phase if install fails):
 
 ```bash
-npx skills add amajorai/skills/skills/edge-cases && echo "EDGE_CASES_INSTALLED" || echo "EDGE_CASES_INSTALL_FAILED"
-npx skills add amajorai/skills/skills/e2e && echo "E2E_INSTALLED" || echo "E2E_INSTALL_FAILED"
+npx --yes skills add amajorai/skills/skills/edge-cases -y && echo "EDGE_CASES_INSTALLED" || echo "EDGE_CASES_INSTALL_FAILED"
+npx --yes skills add amajorai/skills/skills/e2e -y && echo "E2E_INSTALLED" || echo "E2E_INSTALL_FAILED"
 ```
 
 At the end of the interview, create tasks for every remaining phase with `TaskCreate`. Set `addBlockedBy` so each phase is blocked by the previous one. Skip tasks for opted-out phases.
