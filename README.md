@@ -27,19 +27,38 @@ Simple, minimal, lean. One interview, one plan, ship the thing.
 
 ```mermaid
 flowchart TD
-    subgraph sf["⚡ /ship-fast"]
+    subgraph sf["⚡ /ship-fast  (stops here)"]
         A["🎤 Interview (Sonnet)\nSurface requirements + quality gates"] --> B["🔍 Explore (Sonnet)\n3-5 parallel subagents map the codebase"]
         B --> C["🧠 Plan (Opus)\n/model opusplan"]
         C --> D["⚡ Implement (Sonnet)\n/batch: parallel isolated worktrees"]
         D --> E["✅ Verify (Sonnet)\n/goal: all acceptance criteria must pass"]
     end
-    E --> H["✂️ Simplify (Sonnet)\n/goal: no dead code or over-engineering"]
     E -.-> F["🧪 Edge Cases (Sonnet)\n8 parallel subagents across boundary categories"]
     F -.-> G["🌐 E2E Tests (Sonnet)\nPlaywright or Maestro: golden path + edge cases"]
-    G -.-> H
+    G -.-> H["✂️ Simplify (Sonnet)\n/goal: no dead code or over-engineering"]
+    E -.-> H
     H --> I["🔒 Security Review (Sonnet)\n/security-review: HIGH/CRITICAL fixed"]
     I --> J["🏁 Final Verify (Sonnet)\n/goal: clean deployable state confirmed"]
+
+    style sf fill:#1a1a2e,stroke:#4a4a8a
 ```
+
+## GitHub deployment checks
+
+Both `/ship` and `/ship-fast` can poll your CI/CD deployment after the verify phase(s). Opt in during the interview.
+
+When enabled, after local tests pass the skill polls:
+
+```bash
+gh api "repos/{owner}/{repo}/deployments?environment=production&per_page=1" --jq '.[0].id'
+gh api "repos/{owner}/{repo}/deployments/{id}/statuses?per_page=1" --jq '.[0].state'
+```
+
+- `success` → continues to the next phase.
+- `pending` / `in_progress` / `queued` → waits 30 s and polls again (up to 20 polls).
+- `failure` / `error` → inspects logs, diagnoses the root cause, fixes the code, pushes, and restarts the poll. After 3 failed fix attempts it surfaces to you before continuing.
+
+`/ship` runs this check at the end of both Phase 5 (Verify) and Phase 10 (Final Verify).
 
 ## GitHub issue tracking
 

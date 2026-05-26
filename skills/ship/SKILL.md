@@ -34,6 +34,7 @@ Ask the user about (combine related questions, don't fire them one by one):
 - **Ambiguities**: Unclear terms, conflicting requirements, or edge cases in the task description?
 - **Quality gates**: Edge cases, E2E tests, both, or neither? Default: both.
 - **GitHub issues**: Track this work with GitHub issues?
+- **GitHub deployment checks**: Should the verify phases check that GitHub deployments succeed? (polls until the deployment passes, diagnoses and fixes on failure — opt in if this repo has CI/CD deployments)
 - **Implementation strategy**: Parallel subagents shared workspace (recommended) / let agent decide / isolated worktrees?
 
 Do not proceed until you have unambiguous acceptance criteria confirmed by the user.
@@ -53,7 +54,7 @@ npx skills add amajorai/skills/skills/e2e && echo "E2E_INSTALLED" || echo "E2E_I
 
 At the end of the interview, create tasks for every remaining phase with `TaskCreate`. Set `addBlockedBy` so each phase is blocked by the previous one. Skip tasks for opted-out phases.
 
-**Track in working memory (not shell variables):** quality gate choices + skill availability, implementation strategy, `SHIP_GH_ENABLED`, GitHub issue numbers/URLs.
+**Track in working memory (not shell variables):** quality gate choices + skill availability, implementation strategy, `SHIP_GH_ENABLED`, `SHIP_CHECK_GH_DEPLOYMENTS`, GitHub issue numbers/URLs.
 
 
 ## Phase 1.5: GitHub Prerequisites Check
@@ -118,10 +119,24 @@ After all waves complete, mark Implement `completed`.
 
 Mark Verify `in_progress`. Run an in-session goal loop (max 5 passes) — do not spawn a subagent:
 
-1. Run the full test suite, lint/typecheck, and smoke-test end-to-end yourself using Bash.
-2. Evaluate the output against each Phase 1 acceptance criterion.
-3. All criteria pass → proceed. Failures remain → fix them directly (edit files, re-run), count as one pass.
-4. After 5 passes with failures → surface to user for direction before continuing.
+1. Run the project build (e.g. `bun run build`) to catch compilation errors before running tests.
+2. Run the full test suite, lint/typecheck, and smoke-test end-to-end yourself using Bash.
+3. Evaluate the output against each Phase 1 acceptance criterion.
+4. All criteria pass → proceed. Failures remain → fix them directly (edit files, re-run), count as one pass.
+5. After 5 passes with failures → surface to user for direction before continuing.
+
+**If `SHIP_CHECK_GH_DEPLOYMENTS=true`:** once all local criteria pass, enter a deployment-check loop (max 20 polls, ~30 s apart):
+
+```bash
+# Fetch the latest deployment ID (adjust environment name as needed)
+gh api "repos/{owner}/{repo}/deployments?environment=production&per_page=1" --jq '.[0].id'
+# Check its current status
+gh api "repos/{owner}/{repo}/deployments/{id}/statuses?per_page=1" --jq '.[0].state'
+```
+
+- `success` → continue to next phase.
+- `pending` / `in_progress` / `queued` → wait 30 s and poll again.
+- `failure` / `error` → inspect the deployment logs, diagnose the root cause, fix the code, push, and restart the poll from the beginning (counts as one fix attempt). After 3 fix attempts without reaching `success`, surface to the user before continuing.
 
 Mark Verify `completed`.
 
@@ -187,11 +202,14 @@ Mark Security review `completed`.
 
 Mark Final verify `in_progress`. Same in-session goal loop as Phase 5 (max 5 passes) against:
 
-1. All original acceptance criteria still pass
-2. No regressions from Phases 6–9
-3. Application is in a clean, deployable state
+1. Run the project build (`bun run build` or equivalent) — must be clean.
+2. All original acceptance criteria still pass.
+3. No regressions from Phases 6–9.
+4. Application is in a clean, deployable state.
 
 Surface blocking failures to user if unmet after 5 passes.
+
+**If `SHIP_CHECK_GH_DEPLOYMENTS=true`:** repeat the same deployment-check loop from Phase 5 — poll until `success`, fix and re-push on `failure`/`error`, escalate to user after 3 fix attempts.
 
 Mark Final verify `completed`.
 

@@ -34,6 +34,7 @@ Ask the user in a single message (combine all questions):
 - **Acceptance criteria**: What does done look like? How will we verify correctness?
 - **Constraints**: Performance requirements, backwards compatibility, existing patterns to follow, team conventions?
 - **Ambiguities**: Unclear terms, conflicting requirements, or edge cases in the task description?
+- **GitHub deployment checks**: Should the verify phase check that GitHub deployments succeed? (polls until the deployment passes, diagnoses and fixes on failure — opt in if this repo has CI/CD deployments)
 - **Implementation strategy**: How should Phase 4 run parallel units?
   - **(Recommended) Parallel subagents, shared workspace** — fastest; agents work concurrently on the same working tree with no overhead. Works for most tasks where units touch different files.
   - **Let the agent decide** — agent evaluates the plan at implementation time and picks the right strategy based on file overlap and unit size.
@@ -42,6 +43,8 @@ Ask the user in a single message (combine all questions):
 Do not proceed until you have enough information to write unambiguous acceptance criteria. Write them as a numbered list and confirm with the user before continuing.
 
 Once the user confirms, create tasks for all remaining phases using `TaskCreate`: "Explore codebase", "Plan implementation", "Implement", "Verify". Set up `addBlockedBy` dependencies so each phase is blocked by the previous one.
+
+**Track in working memory:** `SHIP_FAST_CHECK_GH_DEPLOYMENTS` (true/false based on user answer above).
 
 
 ## Phase 2: Explore
@@ -89,10 +92,24 @@ Wait for all units to complete before moving to verification. Mark the Implement
 
 Mark the Verify task `in_progress`. Run an in-session goal loop (max 5 passes) — do not spawn a subagent:
 
-1. Run the full test suite, lint/typecheck, and smoke-test end-to-end yourself using Bash.
-2. Evaluate the output against each Phase 1 acceptance criterion.
-3. All criteria pass → proceed. Failures remain → fix them directly (edit files, re-run), count as one pass.
-4. After 5 passes with failures → surface to user for direction before continuing.
+1. Run the project build (e.g. `bun run build`) to catch compilation errors before running tests.
+2. Run the full test suite, lint/typecheck, and smoke-test end-to-end yourself using Bash.
+3. Evaluate the output against each Phase 1 acceptance criterion.
+4. All criteria pass → proceed. Failures remain → fix them directly (edit files, re-run), count as one pass.
+5. After 5 passes with failures → surface to user for direction before continuing.
+
+**If `SHIP_FAST_CHECK_GH_DEPLOYMENTS=true`:** once all local criteria pass, enter a deployment-check loop (max 20 polls, ~30 s apart):
+
+```bash
+# Fetch the latest deployment ID (adjust environment name as needed)
+gh api "repos/{owner}/{repo}/deployments?environment=production&per_page=1" --jq '.[0].id'
+# Check its current status
+gh api "repos/{owner}/{repo}/deployments/{id}/statuses?per_page=1" --jq '.[0].state'
+```
+
+- `success` → mark verify completed and continue.
+- `pending` / `in_progress` / `queued` → wait 30 s and poll again.
+- `failure` / `error` → inspect the deployment logs, diagnose the root cause, fix the code, push, and restart the poll from the beginning (counts as one fix attempt). After 3 fix attempts without reaching `success`, surface to the user before continuing.
 
 Mark the Verify task `completed`.
 
