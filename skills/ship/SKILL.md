@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Full-cycle development workflow for any non-trivial feature or fix. Runs up to 10 phases (interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify) using the strongest available model for planning and autonomous goal loops for quality gates. Use when asked to implement a feature, fix a bug, or ship something with full quality assurance.
+description: Full-cycle development workflow for any non-trivial feature or fix. Runs up to 10 phases (interview, explore, plan, implement, verify, edge cases, e2e tests, code review, security review, final verify) using the strongest available model for planning and autonomous goal loops for quality gates. Use when asked to implement a feature, fix a bug, or ship something with full quality assurance.
 argument-hint: <task description>
 ---
 
@@ -177,18 +177,15 @@ Skill({ skill: "e2e", args: "<feature or flow to cover>" })
 All tests must pass before proceeding. Mark E2E tests `completed`.
 
 
-## Phase 8: Simplify
+## Phase 8: Code Review
 
-Mark Simplify `in_progress`. Run an in-session goal loop (max 5 passes) — do not spawn a subagent:
+Mark Code review `in_progress`. Invoke:
 
-**Condition:** All code added or modified is as simple as possible. No unnecessary abstractions, dead code, over-engineering, or speculative generality. Every line serves a concrete current requirement. All existing tests still pass.
+```
+Skill({ skill: "code-review", args: "high" })
+```
 
-1. Review modified files yourself: remove dead code, flatten abstractions, simplify logic.
-2. Run tests. Green + no further simplification needed → condition met, proceed.
-3. Tests break → revert only the breaking change, re-evaluate.
-4. Hard gate: never leave this phase with failing tests.
-
-Mark Simplify `completed`.
+Fix all CONFIRMED and PLAUSIBLE findings before proceeding. Mark Code review `completed`.
 
 
 ## Phase 9: Security Review

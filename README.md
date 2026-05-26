@@ -24,7 +24,7 @@ Simple, minimal, lean. One interview, one plan, ship the thing.
 
 | Skill | What it does |
 |-------|-------------|
-| [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: interview, explore, plan, implement, verify, edge cases, e2e tests, simplify, security review, final verify. Optionally creates atomic GitHub issues per unit (asked during interview) |
+| [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: interview, explore, plan, implement, verify, edge cases, e2e tests, code review, security review, final verify. Optionally creates atomic GitHub issues per unit (asked during interview) |
 | [`/ship-fast`](skills/ship-fast/SKILL.md) | Lightweight 5-phase flow for simple features. Skips security review, edge cases, and simplification |
 
 ## How it works
@@ -39,7 +39,7 @@ flowchart TD
     end
     E -.-> F["🧪 Edge Cases (Sonnet)\n8 parallel subagents across boundary categories"]
     F -.-> G["🌐 E2E Tests (Sonnet)\nPlaywright or Maestro: golden path + edge cases"]
-    G -.-> H["✂️ Simplify (Sonnet)\n/goal: no dead code or over-engineering"]
+    G -.-> H["🔍 Code Review (Sonnet)\n/code-review: fix CONFIRMED + PLAUSIBLE findings"]
     E -.-> H
     H --> I["🔒 Security Review (Sonnet)\n/security-review: HIGH/CRITICAL fixed"]
     I --> J["🏁 Final Verify (Sonnet)\n/goal: clean deployable state confirmed"]
@@ -95,11 +95,37 @@ gh api "repos/{owner}/{repo}/deployments/{id}/statuses?per_page=1" --jq '.[0].st
 
 - `/model opusplan`: Opus for planning, auto-switches to Sonnet for execution
 - `/batch`: parallel implementation across isolated git worktrees
-- `/goal` behavior: verify, simplify, and final verify phases replicate `/goal` by looping **in the same session** — run tests, evaluate against acceptance criteria, fix directly, repeat (max 5 passes). No subagents. This is what `/goal` does: keeps Claude in the same context, iterating until the condition is met. `/goal` itself can't be invoked programmatically from within a skill (it's a UI/CLI stop hook, not a `Skill` tool call), so the skill implements the equivalent pattern directly.
+- `/goal` behavior: verify and final verify phases replicate `/goal` by looping **in the same session** — run tests, evaluate against acceptance criteria, fix directly, repeat (max 5 passes). No subagents. `/goal` itself can't be invoked programmatically from within a skill (it's a UI/CLI stop hook, not a `Skill` tool call), so the skill implements the equivalent pattern directly.
 - `/security-review`: built-in security audit
 - `/edge-cases`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 6, optional)
 - `/e2e`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 7, optional)
+- `/code-review`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 8)
 - **Task tools** (`TaskCreate`, `TaskUpdate`): creates a task per phase after the interview so you can watch live progress in Claude Code's task UI
+
+## /goal loop — how it works
+
+`/goal` is a Claude Code CLI stop hook, not a programmatic command — it can't be invoked from inside a skill via `Skill({ skill: "goal" })`. Ship replicates its behavior directly in-session for the Verify and Final Verify phases.
+
+```mermaid
+flowchart LR
+    subgraph native["/goal <condition>  (Claude Code native)"]
+        direction TB
+        N1["Evaluate condition"] -->|"Not met"| N2["Fix directly, same session"]
+        N2 --> N1
+        N1 -->|"Met"| N3["Stop"]
+    end
+
+    subgraph ship["ship.md inline loop  (Verify / Final Verify)"]
+        direction TB
+        S1["Run build + tests"] --> S2{"Criteria met?"}
+        S2 -->|"Yes"| S3["Mark phase completed"]
+        S2 -->|"No, pass ≤ 5"| S4["Fix directly, same session"]
+        S4 --> S1
+        S1 -->|"Pass 5, still failing"| S5["Surface to user"]
+    end
+```
+
+Both stay in the **same session** (no subagents, full context retained) and fix directly without hand-off. The difference: `/goal` has no pass cap and is user-initiated. Ship's loop caps at 5 passes and escalates to the user on failure rather than looping forever.
 
 ## Quickstart
 
