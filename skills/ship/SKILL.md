@@ -170,13 +170,19 @@ Do not proceed until all P0/P1 edge cases are covered and the full test suite pa
 
 *Skip if opted out or `e2e` skill unavailable.*
 
-Mark E2E tests `in_progress`. Invoke:
+Mark E2E tests `in_progress`. Invoke the e2e skill with the feature area and the acceptance criteria from the Phase 1+2 loop as context, so it knows what flows to cover:
 
 ```
-Skill({ skill: "e2e", args: "<feature or flow to cover>" })
+Skill({ skill: "e2e", args: "<feature area> — acceptance criteria: <criteria from Phase 1+2 loop>" })
 ```
 
-All tests must pass before proceeding. Mark E2E tests `completed`.
+The e2e skill runs its own full pipeline (discover flows, set up Playwright or Maestro, write and run tests). **Do not mark this phase completed until you have confirmed from the skill's output that all tests actually passed** — read the skill's completion report and verify the pass/fail counts. If the skill returns without a clear pass confirmation, run the test suite yourself:
+
+```bash
+bun run test:e2e 2>/dev/null || npx playwright test 2>/dev/null || maestro test e2e/ 2>/dev/null
+```
+
+All tests must be green before proceeding. Mark E2E tests `completed`.
 
 
 ## Phase 8: Code Review
@@ -243,4 +249,4 @@ npx --yes skills list 2>/dev/null | grep -qE '^hunt$' && echo "ALREADY_INSTALLED
 ```
 
 - **Already installed:** mention at the end of the report — "If anything breaks in production, run `/hunt <symptom>` to track it down."
-- **Not installed:** add a one-liner — "Tip: `npx skills add amajorai/hunt.md` gives you `/hunt` for systematic debugging when bugs appear."
+- **Not installed:** add a one-liner — "Tip: `npx skills add amajorai/fix.md` gives you `/fix` for systematic debugging when bugs appear."
