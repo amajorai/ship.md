@@ -59,7 +59,7 @@ flowchart TD
 | `/goal` (inline) | Verify + Final Verify | In-session loop: run tests, evaluate criteria, fix directly, repeat (max 5 passes) — see below |
 | `/edge-cases` | Edge Cases (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — 8 parallel subagents across boundary categories |
 | `/e2e` | E2E Tests (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — Playwright or Maestro, with Computer Use fallback |
-| `/code-review` | Code Review | From [amajorai/skills](https://github.com/amajorai/skills) — fix CONFIRMED + PLAUSIBLE findings |
+| `/code-review` | Code Review | Built-in audit — fix CONFIRMED + PLAUSIBLE findings before proceeding |
 | `/security-review` | Security Review | Built-in audit — all HIGH/CRITICAL findings fixed before proceeding |
 | `TaskCreate` / `TaskUpdate` | All phases | One task per phase, blocked in sequence — visible live in Claude Code's task UI |
 
