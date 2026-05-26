@@ -50,6 +50,44 @@ flowchart TD
     style sf fill:#1a1a2e,stroke:#4a4a8a
 ```
 
+## Commands used
+
+| Command | Phase | What it does |
+|---------|-------|-------------|
+| `/model opusplan` | Plan | Switches to Opus for planning, auto-returns to Sonnet for execution |
+| `/batch` | Implement | Parallel implementation across isolated git worktrees |
+| `/goal` (inline) | Verify + Final Verify | In-session loop: run tests, evaluate criteria, fix directly, repeat (max 5 passes) — see below |
+| `/edge-cases` | Edge Cases (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — 8 parallel subagents across boundary categories |
+| `/e2e` | E2E Tests (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — Playwright or Maestro, with Computer Use fallback |
+| `/code-review` | Code Review | From [amajorai/skills](https://github.com/amajorai/skills) — fix CONFIRMED + PLAUSIBLE findings |
+| `/security-review` | Security Review | Built-in audit — all HIGH/CRITICAL findings fixed before proceeding |
+| `TaskCreate` / `TaskUpdate` | All phases | One task per phase, blocked in sequence — visible live in Claude Code's task UI |
+
+## /goal loop — how it works
+
+`/goal` is a Claude Code CLI stop hook, not a programmatic command — it can't be invoked from inside a skill via `Skill({ skill: "goal" })`. Ship replicates its behavior directly in-session for the Verify and Final Verify phases.
+
+```mermaid
+flowchart LR
+    subgraph native["/goal <condition>  (Claude Code native)"]
+        direction TB
+        N1["Evaluate condition"] -->|"Not met"| N2["Fix directly, same session"]
+        N2 --> N1
+        N1 -->|"Met"| N3["Stop"]
+    end
+
+    subgraph ship["ship.md inline loop  (Verify / Final Verify)"]
+        direction TB
+        S1["Run build + tests"] --> S2{"Criteria met?"}
+        S2 -->|"Yes"| S3["Mark phase completed"]
+        S2 -->|"No, pass ≤ 5"| S4["Fix directly, same session"]
+        S4 --> S1
+        S1 -->|"Pass 5, still failing"| S5["Surface to user"]
+    end
+```
+
+Both stay in the **same session** (no subagents, full context retained) and fix directly without hand-off. The difference: `/goal` has no pass cap and is user-initiated. Ship's loop caps at 5 passes and escalates to the user on failure rather than looping forever.
+
 ## GitHub deployment checks
 
 Both `/ship` and `/ship-fast` can poll your CI/CD deployment after the verify phase(s). Opt in during the interview.
@@ -91,44 +129,6 @@ gh api "repos/{owner}/{repo}/deployments/{id}/statuses?per_page=1" --jq '.[0].st
 **PRs** are created and linked to their issues (`Closes #N`) at the end of Phase 4. On the shared-workspace path (recommended), one PR covers the full branch. On isolated worktrees, each unit gets its own PR.
 
 **Closing** is automatic: each implementing agent closes its own sub-issue on completion; the orchestrator closes the epic at the end of the pipeline.
-
-## Built-in commands used
-
-`/ship` orchestrates these Claude Code built-ins:
-
-- `/model opusplan`: Opus for planning, auto-switches to Sonnet for execution
-- `/batch`: parallel implementation across isolated git worktrees
-- `/goal` behavior: verify and final verify phases replicate `/goal` by looping **in the same session** — run tests, evaluate against acceptance criteria, fix directly, repeat (max 5 passes). No subagents. `/goal` itself can't be invoked programmatically from within a skill (it's a UI/CLI stop hook, not a `Skill` tool call), so the skill implements the equivalent pattern directly.
-- `/security-review`: built-in security audit
-- `/edge-cases`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 6, optional)
-- `/e2e`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 7, optional)
-- `/code-review`: from [amajorai/skills](https://github.com/amajorai/skills) (Phase 8)
-- **Task tools** (`TaskCreate`, `TaskUpdate`): creates a task per phase after the interview so you can watch live progress in Claude Code's task UI
-
-## /goal loop — how it works
-
-`/goal` is a Claude Code CLI stop hook, not a programmatic command — it can't be invoked from inside a skill via `Skill({ skill: "goal" })`. Ship replicates its behavior directly in-session for the Verify and Final Verify phases.
-
-```mermaid
-flowchart LR
-    subgraph native["/goal <condition>  (Claude Code native)"]
-        direction TB
-        N1["Evaluate condition"] -->|"Not met"| N2["Fix directly, same session"]
-        N2 --> N1
-        N1 -->|"Met"| N3["Stop"]
-    end
-
-    subgraph ship["ship.md inline loop  (Verify / Final Verify)"]
-        direction TB
-        S1["Run build + tests"] --> S2{"Criteria met?"}
-        S2 -->|"Yes"| S3["Mark phase completed"]
-        S2 -->|"No, pass ≤ 5"| S4["Fix directly, same session"]
-        S4 --> S1
-        S1 -->|"Pass 5, still failing"| S5["Surface to user"]
-    end
-```
-
-Both stay in the **same session** (no subagents, full context retained) and fix directly without hand-off. The difference: `/goal` has no pass cap and is user-initiated. Ship's loop caps at 5 passes and escalates to the user on failure rather than looping forever.
 
 ## Quickstart
 
