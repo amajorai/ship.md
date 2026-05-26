@@ -55,7 +55,7 @@ flowchart TD
 | Command | Phase | What it does |
 |---------|-------|-------------|
 | `/model opusplan` | Plan | Switches to Opus for planning, auto-returns to Sonnet for execution |
-| `/batch` | Implement | Parallel implementation across isolated git worktrees |
+| `/batch` (inline) | Implement | Can't be invoked programmatically — ship replicates it by spawning parallel Agent calls per implementation unit |
 | `/goal` (inline) | Verify + Final Verify | In-session loop: run tests, evaluate criteria, fix directly, repeat (max 5 passes) — see below |
 | `/edge-cases` | Edge Cases (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — 8 parallel subagents across boundary categories |
 | `/e2e` | E2E Tests (opt-in) | From [amajorai/skills](https://github.com/amajorai/skills) — Playwright or Maestro, with Computer Use fallback |
