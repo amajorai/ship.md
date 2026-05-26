@@ -2,7 +2,7 @@
 
 A thin, structured workflow for shipping features with Claude Code. Not a full-blown framework like [GSD](https://github.com/gsd-build/get-shit-done) or [bmad-method](https://github.com/bmad-method/bmad-method). Just a wrapper around Claude Code's own built-in commands (`/batch`, `/goal`, `/model`, `/security-review`) that adds structure, quality gates, and optional GitHub issue tracking so nothing falls through the cracks.
 
-Simple, minimal, lean. One interview, one plan, ship the thing.
+Simple, minimal, lean. Explore first, ask only what the codebase can't answer, then plan and ship.
 
 [![Status](https://shieldcn.dev/badge/status-beta-blue.svg)](https://github.com/amajorai/ship.md)
 [![Stars](https://shieldcn.dev/github/stars/amajorai/ship.md.svg)](https://github.com/amajorai/ship.md)
@@ -18,13 +18,14 @@ Simple, minimal, lean. One interview, one plan, ship the thing.
 - 🪅 **[vibe.md](https://github.com/amajorai/vibe.md)** to spin up your production server, deploy pipeline, and scaffold your project before you start shipping.
 - 🎉 **[party.md](https://github.com/amajorai/party.md)** to run ship.md autonomously 24/7. Drop issues into a GitHub Projects board; party.md picks them up and delegates building to `/ship` automatically.
 - 🎬 **[replay.md](https://github.com/amajorai/replay.md)** to record video proof of your feature working — browser automation, VNC, or Computer Use — and share the link straight from chat.
+- 🔎 **[hunt.md](https://github.com/amajorai/hunt.md)** when something breaks after shipping. `/hunt` instruments the code with targeted logs, reads them to confirm root cause, and makes a surgical fix.
 - ⚡ **[amajorai/skills](https://github.com/amajorai/skills)** for edge cases, E2E, payments, auth, SEO, icons, CI, observability, and 20+ more.
 
 ## Skills
 
 | Skill | What it does |
 |-------|-------------|
-| [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: interview, explore, plan, implement, verify, edge cases, e2e tests, code review, security review, final verify. Optionally creates atomic GitHub issues per unit (asked during interview) |
+| [`/ship`](skills/ship/SKILL.md) | Full 10-phase pipeline: explore+interview loop (explore first, ask one question at a time only for what the codebase can't answer), plan, implement, verify, edge cases, e2e tests, code review, security review, final verify. Optionally creates atomic GitHub issues per unit |
 | [`/ship-fast`](skills/ship-fast/SKILL.md) | Lightweight 5-phase flow for simple features. Skips security review, edge cases, and simplification |
 
 ## How it works
@@ -32,17 +33,19 @@ Simple, minimal, lean. One interview, one plan, ship the thing.
 ```mermaid
 flowchart TD
     subgraph sf["⚡ /ship-fast  (stops here)"]
-        A["🎤 Interview (Sonnet)\nSurface requirements + quality gates"] --> B["🔍 Explore (Sonnet)\n3-5 parallel subagents map the codebase"]
-        B --> C["🧠 Plan (Opus)\n/model opusplan"]
-        C --> D["⚡ Implement (Sonnet)\n/batch: parallel isolated worktrees"]
-        D --> E["✅ Verify (Sonnet)\n/goal: all acceptance criteria must pass"]
+        A["🔍 Explore (Sonnet)\n3-5 parallel subagents map the codebase"] --> B{"Still open\nareas?"}
+        B -->|"Yes"| C["🎤 Interview (Sonnet)\nAsk 1 question at a time — answer may resolve others"]
+        C --> A
+        B -->|"No"| D["🧠 Plan (Opus)\n/model opusplan"]
+        D --> E["⚡ Implement (Sonnet)\n/batch: parallel isolated worktrees"]
+        E --> F["✅ Verify (Sonnet)\n/goal: all acceptance criteria must pass"]
     end
-    E -.-> F["🧪 Edge Cases (Sonnet)\n8 parallel subagents across boundary categories"]
-    F -.-> G["🌐 E2E Tests (Sonnet)\nPlaywright or Maestro: golden path + edge cases"]
-    G -.-> H["🔍 Code Review (Sonnet)\n/code-review: fix CONFIRMED + PLAUSIBLE findings"]
-    E -.-> H
-    H --> I["🔒 Security Review (Sonnet)\n/security-review: HIGH/CRITICAL fixed"]
-    I --> J["🏁 Final Verify (Sonnet)\n/goal: clean deployable state confirmed"]
+    F -.-> G["🧪 Edge Cases (Sonnet)\n8 parallel subagents across boundary categories"]
+    G -.-> H["🌐 E2E Tests (Sonnet)\nPlaywright or Maestro: golden path + edge cases"]
+    H -.-> I["🔍 Code Review (Sonnet)\n/code-review: fix CONFIRMED + PLAUSIBLE findings"]
+    F -.-> I
+    I --> J["🔒 Security Review (Sonnet)\n/security-review: HIGH/CRITICAL fixed"]
+    J --> K["🏁 Final Verify (Sonnet)\n/goal: clean deployable state confirmed"]
 
     style sf fill:#1a1a2e,stroke:#4a4a8a
 ```

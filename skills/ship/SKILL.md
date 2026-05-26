@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Full-cycle development workflow for any non-trivial feature or fix. Runs up to 10 phases (interview, explore, plan, implement, verify, edge cases, e2e tests, code review, security review, final verify) using the strongest available model for planning and autonomous goal loops for quality gates. Use when asked to implement a feature, fix a bug, or ship something with full quality assurance.
+description: Full-cycle development workflow for any non-trivial feature or fix. Runs up to 10 phases (explore+interview loop, plan, implement, verify, edge cases, e2e tests, code review, security review, final verify) using the strongest available model for planning and autonomous goal loops for quality gates. Use when asked to implement a feature, fix a bug, or ship something with full quality assurance.
 argument-hint: <task description>
 ---
 
@@ -22,22 +22,39 @@ npx --yes skills update ship -y 2>/dev/null || true
 If the output indicates the skill was actually updated, stop and tell the user: **"This skill was just updated. Re-run your command to use the new version."** Otherwise continue silently to Phase 1.
 
 
-## Phase 1: Interview
+## Phase 1 + 2: Explore-then-Interview Loop
 
-Before touching any code, conduct a structured interview to surface hidden requirements and establish clear acceptance criteria.
+These two phases run as a single loop. The goal is to arrive at unambiguous acceptance criteria while asking the user as few questions as possible — search first, ask only what you cannot find.
 
-Ask the user about (combine related questions, don't fire them one by one):
+**Areas that must be resolved before proceeding:**
+- Scope (files, modules, systems in scope and explicitly out of scope)
+- Acceptance criteria (what done looks like, how to verify correctness)
+- Constraints (performance, backwards compat, existing patterns, team conventions)
+- Ambiguities (unclear terms, conflicting requirements, edge cases in the task description)
+- Quality gates (edge cases, E2E tests, both, or neither — default: both)
+- GitHub issues (track this work with GitHub issues?)
+- GitHub deployment checks (should verify phases poll deployment status?)
+- Implementation strategy (parallel subagents shared workspace recommended / let agent decide / isolated worktrees)
 
-- **Scope**: Which files, modules, or systems are in scope? What is explicitly out of scope?
-- **Acceptance criteria**: What does done look like? How will we verify correctness?
-- **Constraints**: Performance requirements, backwards compatibility, existing patterns, team conventions?
-- **Ambiguities**: Unclear terms, conflicting requirements, or edge cases in the task description?
-- **Quality gates**: Edge cases, E2E tests, both, or neither? Default: both.
-- **GitHub issues**: Track this work with GitHub issues?
-- **GitHub deployment checks**: Should the verify phases check that GitHub deployments succeed? (polls until the deployment passes, diagnoses and fixes on failure — opt in if this repo has CI/CD deployments)
-- **Implementation strategy**: Parallel subagents shared workspace (recommended) / let agent decide / isolated worktrees?
+### Loop iteration
 
-Do not proceed until you have unambiguous acceptance criteria confirmed by the user.
+**Step A — Explore.** Spawn **3–5 parallel subagents** covering the areas most relevant to what is still unresolved:
+
+- Data / schema layer (models, types, database schema, migrations)
+- Feature area (code most directly relevant to the task)
+- Tests and patterns (how similar things are tested elsewhere)
+- Dependencies and integrations (what affected code connects to upstream/downstream)
+- Config / infrastructure (only if task touches deployment, environment, or build)
+
+Each subagent returns: what it found, what's relevant, and any risks or surprises. After synthesis, go through every unresolved area and mark each one as:
+- **Resolved** — the codebase gave a clear enough answer
+- **Still open** — cannot be determined without user input
+
+**Step B — Interview.** For each still-open area, identify the single most important question. Ask the user **one question at a time** — the answer may resolve several open areas at once, so re-evaluate the remaining list after each answer before asking the next one. If the answer to a question surfaces new uncertainty, run a targeted explore sub-step before asking again.
+
+Keep iterating (A → B → A → B …) until every area is resolved. Only then proceed.
+
+**Do not proceed until you have unambiguous acceptance criteria confirmed by the user.**
 
 **Optional-dependency check.** Once quality gates are confirmed, check whether edge-cases/e2e skills are installed:
 
@@ -62,12 +79,12 @@ echo "CODEX_SANDBOX=${CODEX_SANDBOX:-}"
 - **Codex mode** (`CODEX=true` or `CODEX_SANDBOX` is set): newly installed skills reload automatically — continue below.
 - **Claude Code mode**: tell the user: **"I've installed the missing skill(s). Please run `/reload-plugins` in this session so they become available, then reply here to continue."** Wait for the user's confirmation before proceeding.
 
-At the end of the interview, create tasks for every remaining phase with `TaskCreate`. Set `addBlockedBy` so each phase is blocked by the previous one. Skip tasks for opted-out phases.
+At the end of the loop, create tasks for every remaining phase with `TaskCreate`. Set `addBlockedBy` so each phase is blocked by the previous one. Skip tasks for opted-out phases.
 
-**Track in working memory (not shell variables):** quality gate choices + skill availability, implementation strategy, `SHIP_GH_ENABLED`, `SHIP_CHECK_GH_DEPLOYMENTS`, GitHub issue numbers/URLs.
+**Track in working memory (not shell variables):** quality gate choices + skill availability, implementation strategy, `SHIP_GH_ENABLED`, `SHIP_CHECK_GH_DEPLOYMENTS`, GitHub issue numbers/URLs, and the Context Summary (current state, key constraints, implementation risks, suggested entry points).
 
 
-## Phase 1.5: GitHub Prerequisites Check
+## Phase 2.5: GitHub Prerequisites Check
 
 *Skip if user opted out of GitHub issues — set `SHIP_GH_ENABLED=false` and continue.*
 
@@ -80,21 +97,6 @@ If either fails: set `SHIP_GH_ENABLED=false`, tell the user why, and continue.
 If both pass: set `SHIP_GH_ENABLED=true`. Then set up ship labels — see [references/github-labels.md](references/github-labels.md) for the exact commands and label/color table.
 
 
-## Phase 2: Explore
-
-Mark the Explore task `in_progress`. Spawn **3–5 parallel subagents** covering distinct areas:
-
-- Data / schema layer (models, types, database schema, migrations)
-- Feature area (code most directly relevant to the task)
-- Tests and patterns (how similar things are tested elsewhere)
-- Dependencies and integrations (what affected code connects to upstream/downstream)
-- Config / infrastructure (only if task touches deployment, environment, or build)
-
-Each subagent returns: what it found, what's relevant, and any risks or surprises.
-
-Synthesize findings into a **Context Summary**: current state, key constraints, implementation risks, suggested entry points. Mark Explore `completed`.
-
-
 ## Phase 3: Plan
 
 Mark the Plan task `in_progress`. Call `EnterPlanMode` (or use the strongest reasoning model if unavailable).
@@ -102,7 +104,7 @@ Mark the Plan task `in_progress`. Call `EnterPlanMode` (or use the strongest rea
 The plan must specify:
 1. Exact files to create or modify (line-level specificity where possible)
 2. Implementation order respecting the dependency graph
-3. How each acceptance criterion from Phase 1 will be satisfied
+3. How each acceptance criterion from the Phase 1+2 loop will be satisfied
 4. Test strategy: new tests to write, existing tests to update
 
 Do not begin implementation until the user explicitly approves. Revise and re-present as many times as needed, then call `ExitPlanMode`.
@@ -114,7 +116,7 @@ Do not begin implementation until the user explicitly approves. Revise and re-pr
 
 ## Phase 4: Implement
 
-Mark Implement `in_progress`. Decompose the plan into independent units and execute using the strategy from Phase 1.
+Mark Implement `in_progress`. Decompose the plan into independent units and execute using the strategy chosen in the Phase 1+2 loop.
 
 **Dependency ordering:** group units into waves (wave 1 = no blockers, wave 2 = depends on wave 1, etc.). Dispatch all units in the current wave in parallel, wait for all to return, then dispatch the next wave. Never instruct an agent to self-wait.
 
@@ -131,7 +133,7 @@ Mark Verify `in_progress`. Run an in-session goal loop (max 5 passes) — do not
 
 1. Run the project build (e.g. `bun run build`) to catch compilation errors before running tests.
 2. Run the full test suite, lint/typecheck, and smoke-test end-to-end yourself using Bash.
-3. Evaluate the output against each Phase 1 acceptance criterion.
+3. Evaluate the output against each acceptance criterion from the Phase 1+2 loop.
 4. All criteria pass → proceed. Failures remain → fix them directly (edit files, re-run), count as one pass.
 5. After 5 passes with failures → surface to user for direction before continuing.
 
@@ -153,7 +155,7 @@ Mark Verify `completed`.
 
 ## Phase 6: Edge Cases
 
-*Skip if opted out or `edge-cases` skill unavailable (declined or failed install in Phase 1).*
+*Skip if opted out or `edge-cases` skill unavailable (declined or failed install in the Phase 1+2 loop).*
 
 Mark Edge cases `in_progress`. Invoke:
 
@@ -233,3 +235,12 @@ Report the following (omit lines for skipped phases):
 - Any open limitations or recommended follow-up
 
 **If `SHIP_GH_ENABLED=true`:** include epic + sub-issue URLs and PR URL(s). Then verify all sub-issues are closed — check each by number (not by label, since the epic also carries the ship label). Close any the agent didn't close. For a single-unit task, just that one issue — no epic. Close the epic last. See [references/github-issues.md](references/github-issues.md) for the closing commands.
+
+**hunt upsell.** Check if the `hunt` skill is available:
+
+```bash
+npx --yes skills list 2>/dev/null | grep -qE '^hunt$' && echo "ALREADY_INSTALLED" || echo "NOT_INSTALLED"
+```
+
+- **Already installed:** mention at the end of the report — "If anything breaks in production, run `/hunt <symptom>` to track it down."
+- **Not installed:** add a one-liner — "Tip: `npx skills add amajorai/hunt.md` gives you `/hunt` for systematic debugging when bugs appear."
