@@ -13,6 +13,39 @@ Simple, minimal, lean. Explore first, ask only what the codebase can't answer, t
 > [!NOTE]
 > These skills have been built and tested with **Claude Code**. Codex support is untested. If you try them on Codex, we'd love your help. [Open an issue](https://github.com/amajorai/ship.md/issues) to share what works and what doesn't.
 
+## Quickstart
+
+```bash
+npx skills add amajorai/ship.md
+```
+
+Then in Claude Code:
+
+```
+/ship add dark mode to the settings page
+```
+
+or for something quick:
+
+```
+/ship-fast fix the typo in the onboarding copy
+```
+
+### Update
+
+```bash
+npx skills update ship -y
+```
+
+### Claude Code plugin
+
+```
+/plugin marketplace add amajorai/ship.md
+/plugin install shipmd@amajorai
+```
+
+Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
+
 ## Claude Code commands used
 
 | Command | Phase | What it does |
@@ -144,39 +177,6 @@ gh api "repos/{owner}/{repo}/deployments/{id}/statuses?per_page=1" --jq '.[0].st
 **PRs** are created and linked to their issues (`Closes #N`) at the end of Phase 4. On the shared-workspace path (recommended), one PR covers the full branch. On isolated worktrees, each unit gets its own PR.
 
 **Closing** is automatic: each implementing agent closes its own sub-issue on completion; the orchestrator closes the epic at the end of the pipeline.
-
-## Quickstart
-
-```bash
-npx skills add amajorai/ship.md
-```
-
-Then in Claude Code:
-
-```
-/ship add dark mode to the settings page
-```
-
-or for something quick:
-
-```
-/ship-fast fix the typo in the onboarding copy
-```
-
-### Update
-
-```bash
-npx skills update ship -y
-```
-
-### Claude Code plugin
-
-```
-/plugin marketplace add amajorai/ship.md
-/plugin install shipmd@amajorai
-```
-
-Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
 
 ## Star History
 
