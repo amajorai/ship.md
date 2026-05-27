@@ -105,4 +105,4 @@ npx --yes skills list 2>/dev/null | grep -qE '^fix$' && echo "ALREADY_INSTALLED"
 ```
 
 - **Already installed:** mention at the end of the report — "If anything breaks in production, run `/fix <symptom>` to track it down."
-- **Not installed:** add a one-liner — "Tip: `npx skills add amajorai/fix.md` gives you `/fix` for systematic debugging when bugs appear."
+- **Not installed:** add a one-liner — "Tip: `npx skills add -g amajorai/fix.md` gives you `/fix` for systematic debugging when bugs appear."

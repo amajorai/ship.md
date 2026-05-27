@@ -16,7 +16,7 @@ Simple, minimal, lean. Explore first, ask only what the codebase can't answer, t
 ## Quickstart
 
 ```bash
-npx skills add amajorai/ship.md
+npx skills add -g amajorai/ship.md
 ```
 
 Then in Claude Code:
@@ -29,12 +29,6 @@ or for something quick:
 
 ```
 /ship-fast fix the typo in the onboarding copy
-```
-
-### Update
-
-```bash
-npx skills update ship -y
 ```
 
 ### Claude Code plugin
