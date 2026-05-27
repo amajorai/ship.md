@@ -31,6 +31,22 @@ or for something quick:
 /ship-fast fix the typo in the onboarding copy
 ```
 
+### Update
+
+```bash
+# Update this skill
+npx skills update ship
+
+# Update multiple skills
+npx skills update ship ship-fast
+
+# Update all installed skills (interactive scope prompt)
+npx skills update
+
+# Update all global skills non-interactively
+npx skills update -g -y
+```
+
 ### Claude Code plugin
 
 ```
