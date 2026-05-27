@@ -61,6 +61,7 @@ Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
 
 ## Works great with
 
+- 👻 **[spec.md](https://github.com/amajorai/spec.md)** before you start -- breaks any task into atomic, agent-ready GitHub issues so `/ship` always has a clear, scoped unit to work from.
 - 🔎 **[fix.md](https://github.com/amajorai/fix.md)** when something breaks after shipping. `/fix` instruments the code with targeted logs, reads them to confirm root cause, and makes a surgical fix.
 - 🪅 **[vibe.md](https://github.com/amajorai/vibe.md)** to spin up your production server, deploy pipeline, and scaffold your project before you start shipping.
 - 🎉 **[party.md](https://github.com/amajorai/party.md)** to run ship.md autonomously 24/7. Drop issues into a GitHub Projects board; party.md picks them up and delegates building to `/ship` automatically.
