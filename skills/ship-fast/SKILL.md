@@ -70,13 +70,17 @@ Wait for all units to complete before moving to verification. Mark the Implement
 
 ## Phase 4: Verify
 
-Mark the Verify task `in_progress`. Run an in-session goal loop (max 5 passes) — do not spawn a subagent:
+Mark the Verify task `in_progress`. Spawn an Opus agent (max 5 passes) with the acceptance criteria from Phase 1:
 
-1. Run the project build (e.g. `bun run build`) to catch compilation errors before running tests.
-2. Run the full test suite, lint/typecheck, and smoke-test end-to-end yourself using Bash.
-3. Evaluate the output against each Phase 1 acceptance criterion.
-4. All criteria pass → proceed. Failures remain → fix them directly (edit files, re-run), count as one pass.
-5. After 5 passes with failures → surface to user for direction before continuing.
+```
+Agent({
+  subagent_type: "claude",
+  model: "opus",
+  prompt: "Verify the implementation against these acceptance criteria: <criteria>. Each pass: (1) run the project build, (2) run the full test suite + lint + typecheck, (3) evaluate each criterion. All pass → report success. Failures remain → fix directly and run again. After 5 passes with failures still present → report what failed and stop.",
+})
+```
+
+Surface to user for direction if the agent reports failure after 5 passes.
 
 **If `SHIP_FAST_CHECK_GH_DEPLOYMENTS=true`:** once all local criteria pass, enter a deployment-check loop (max 20 polls, ~30 s apart):
 
