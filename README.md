@@ -76,9 +76,9 @@ Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
 - 🪅 **[vibe.md](https://github.com/amajorai/vibe.md)** to spin up your production server, deploy pipeline, and scaffold your project before you start shipping.
 - 🎉 **[party.md](https://github.com/amajorai/party.md)** to run ship.md autonomously 24/7. Drop issues into a GitHub Projects board; party.md picks them up and delegates building to `/ship` automatically.
 - 🎬 **[replay.md](https://github.com/amajorai/replay.md)** to record video proof of your feature working — browser automation, VNC, or Computer Use — and share the link straight from chat.
-- ⚡ **[amajorai/skills](https://github.com/amajorai/skills)** for edge cases, E2E, payments, auth, SEO, icons, CI, observability, and 20+ more.
 - 🧪 **[sandbox.md](https://github.com/amajorai/sandbox.md)** to build and verify features inside an isolated cloud sandbox — ship from a clean environment every time.
-- 📋 **[ctx.md](https://github.com/amajorai/ctx.md)** to write CLAUDE.md and AGENTS.md before you start shipping — ship's explore phase starts oriented instead of rediscovering the repo from scratch each run.
+- 📋 **[context.md](https://github.com/amajorai/context.md)** to write CLAUDE.md and AGENTS.md before you start shipping — ship's explore phase starts oriented instead of rediscovering the repo from scratch each run.
+- ⚡ **[amajorai/skills](https://github.com/amajorai/skills)** for edge cases, E2E, payments, auth, SEO, icons, CI, observability, and 20+ more.
 
 ## Skills
 
