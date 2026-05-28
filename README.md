@@ -56,6 +56,27 @@ npx skills update -g -y
 
 Invoke as `/shipmd:ship <task>` or `/shipmd:ship-fast <task>`.
 
+## Advisor
+
+When `/ship` is running on a cheaper model (like Sonnet) and gets stuck or uncertain, it will call `advisor()` to get a second opinion from a stronger model before proceeding. The advisor sees the full conversation history and responds with guidance.
+
+Trigger points:
+- Before committing to an uncertain approach
+- After 2 or more failed attempts at the same problem
+- Before declaring a complex task complete
+
+**Upgrade the advisor model** by editing `~/.claude/settings.json`:
+
+```json
+{
+  "advisorModel": "opus"
+}
+```
+
+Changes take effect after restarting the session.
+
+**Codex CLI** - the `advisor()` tool is unavailable in Codex. When stuck, the skill will surface the uncertainty to you and ask for direction rather than guessing. You can also switch to a stronger model in your Codex configuration before continuing.
+
 ## Claude Code commands used
 
 | Command | Phase | What it does |
