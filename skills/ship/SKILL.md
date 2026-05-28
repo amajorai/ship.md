@@ -142,13 +142,18 @@ After all waves complete, mark Implement `completed`.
 
 ## Phase 5: Verify
 
-Mark Verify `in_progress`. Run an in-session goal loop (max 5 passes) — do not spawn a subagent:
+Mark Verify `in_progress`. Spawn an Opus agent (max 5 passes) with the acceptance criteria from the Phase 1+2 loop as its goal condition:
 
-1. Run the project build (e.g. `bun run build`) to catch compilation errors before running tests.
-2. Run the full test suite, lint/typecheck, and smoke-test end-to-end yourself using Bash.
-3. Evaluate the output against each acceptance criterion from the Phase 1+2 loop.
-4. All criteria pass → proceed. Failures remain → fix them directly (edit files, re-run), count as one pass.
-5. After 5 passes with failures → surface to user for direction before continuing.
+```
+Agent({
+  subagent_type: "claude",
+  model: "opus",
+  prompt: "Verify the implementation against these acceptance criteria: <criteria>. Each pass: (1) run the project build, (2) run the full test suite + lint + typecheck, (3) evaluate each criterion. All pass → report success. Failures remain → fix directly and run again. After 5 passes with failures still present → report what failed and stop.",
+  isolation: "worktree"
+})
+```
+
+Surface to user for direction if the agent reports failure after 5 passes.
 
 **If `SHIP_CHECK_GH_DEPLOYMENTS=true`:** once all local criteria pass, enter a deployment-check loop (max 20 polls, ~30 s apart):
 
@@ -215,15 +220,22 @@ Fix all CONFIRMED and PLAUSIBLE findings before proceeding. Mark Code review `co
 
 ## Phase 9: Security Review
 
-Mark Security review `in_progress`. Invoke:
+Mark Security review `in_progress`. Spawn an Opus agent to run the security review:
+
+```
+Agent({
+  subagent_type: "claude",
+  model: "opus",
+  prompt: "Run a security review on the changes in this task (feature area: <area>, changed files: <files>). Audit for: input validation at system boundaries, auth/authz on new endpoints, injection vulnerabilities (SQL/XSS/command/path traversal), hardcoded secrets, trust boundary crossings. Fix all HIGH and CRITICAL findings. If a finding can't be resolved after ~5 attempts, report it and stop for user direction.",
+  isolation: "worktree"
+})
+```
+
+Alternatively, invoke the built-in skill if available:
 
 ```
 Skill({ skill: "security-review", args: "<feature area + changed files>" })
 ```
-
-If unavailable, spawn an agent with this goal condition (scoped to files changed in this task):
-
-> All changes audited for: input validation at system boundaries, auth/authz on new endpoints, no injection vulnerabilities (SQL/XSS/command/path traversal), no hardcoded secrets, intentional trust boundary crossings documented. All HIGH and CRITICAL findings fixed.
 
 If a HIGH/CRITICAL finding can't be resolved within ~5 attempts, surface to user before continuing.
 
@@ -232,12 +244,16 @@ Mark Security review `completed`.
 
 ## Phase 10: Final Verify
 
-Mark Final verify `in_progress`. Same in-session goal loop as Phase 5 (max 5 passes) against:
+Mark Final verify `in_progress`. Spawn an Opus agent (max 5 passes) with the full acceptance criteria and a regression check against Phases 6–9:
 
-1. Run the project build (`bun run build` or equivalent) — must be clean.
-2. All original acceptance criteria still pass.
-3. No regressions from Phases 6–9.
-4. Application is in a clean, deployable state.
+```
+Agent({
+  subagent_type: "claude",
+  model: "opus",
+  prompt: "Final verification pass. Each pass: (1) run the project build — must be clean, (2) confirm all original acceptance criteria still pass: <criteria>, (3) confirm no regressions from edge case hardening, E2E tests, code review, or security review, (4) confirm application is in a clean deployable state. All pass → report success. Failures remain → fix directly and run again. After 5 passes with failures still present → report what failed and stop.",
+  isolation: "worktree"
+})
+```
 
 Surface blocking failures to user if unmet after 5 passes.
 
