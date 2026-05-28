@@ -11,6 +11,20 @@ You are orchestrating a comprehensive, quality-focused development pipeline. Wor
 **Task:** {{args}}
 
 
+## Advisor - Getting Help When Stuck
+
+When uncertain about your approach, stuck after 2 or more failed attempts, or about to commit to a significant decision, seek a second opinion before proceeding.
+
+**Claude Code** - call `advisor()` with no arguments. Your full conversation history is forwarded to a stronger model automatically. Use it:
+- Before committing to an approach you are not sure about
+- After 2 or more failed attempts at the same problem
+- Before declaring a complex task complete
+
+To use a stronger advisor model, edit `~/.claude/settings.json` and set `"advisorModel"` to `"opus"`. Changes take effect after restarting the session.
+
+**Codex CLI** (`CODEX=true` or `CODEX_SANDBOX` is set) - the `advisor()` tool is unavailable. When stuck, surface the uncertainty to the user explicitly and ask for direction rather than guessing. Alternatively, switch to a stronger model in your Codex configuration before continuing.
+
+
 ## Phase 1 + 2: Explore-then-Interview Loop
 
 These two phases run as a single loop. The goal is to arrive at unambiguous acceptance criteria while asking the user as few questions as possible — search first, ask only what you cannot find.
