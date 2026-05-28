@@ -114,16 +114,18 @@ Do not begin implementation until the user explicitly approves. Revise and re-pr
 
 **If `SHIP_GH_ENABLED=false`:** mark Plan `completed` and proceed to Phase 4.
 
-**If `SHIP_GH_ENABLED=true`:** after plan approval, create GitHub issues. For a single atomic unit, create one issue (no epic). For multiple units, create an epic + sub-issues and link them. See [references/github-issues.md](references/github-issues.md) for templates, bash commands, and GraphQL mutations.
+**If `SHIP_GH_ENABLED=true`:** after plan approval, create GitHub issues immediately — before marking Plan completed, before starting Phase 4, before doing anything else. For a single atomic unit, create one issue (no epic). For multiple units, create an epic + sub-issues and link them. See [references/github-issues.md](references/github-issues.md) for templates, bash commands, and GraphQL mutations.
 
-**Share links immediately as issues are created** — do not wait until the Completion Report:
-- Single issue: post its URL in chat as soon as it's created.
-- Epic + sub-issues: post the epic URL first (so the user can see the full plan on GitHub), then each sub-issue URL as it's created. Include a one-line summary of what each sub-issue covers.
+**Post each URL in chat the moment it is created** — do not batch, do not wait until the Completion Report, do not start implementation first:
+- Single issue: post its URL as soon as it is created.
+- Epic + sub-issues: post the epic URL first (so the user can see the full plan on GitHub), then each sub-issue URL as it is created. Include a one-line summary of what each sub-issue covers.
 
-Mark Plan `completed` only after issues exist and links have been shared.
+**Hard gate:** Do not mark Plan `completed` and do not proceed to Phase 4 until every issue URL has been posted in chat. No exceptions.
 
 
 ## Phase 4: Implement
+
+**Pre-flight:** If `SHIP_GH_ENABLED=true`, verify that issue URLs were created and posted in Phase 3 before dispatching any agents. If they are missing for any reason, stop and create them now — do not skip ahead.
 
 Mark Implement `in_progress`. Decompose the plan into independent units and execute using the strategy chosen in the Phase 1+2 loop.
 
