@@ -86,6 +86,8 @@ Surface to user for direction if the agent reports failure after 5 passes.
 
 **If `SHIP_FAST_CHECK_GH_DEPLOYMENTS=true`:** once all local criteria pass, enter a deployment-check loop (max 20 polls, ~30 s apart):
 
+The shell snippets in this file assume a POSIX shell. On Windows, run them via the Bash tool or Git Bash.
+
 ```bash
 gh api "repos/{owner}/{repo}/deployments?environment=production&per_page=1" --jq '.[0].id'
 gh api "repos/{owner}/{repo}/deployments/{id}/statuses?per_page=1" --jq '.[0].state'

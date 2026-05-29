@@ -10,6 +10,8 @@ You are orchestrating a comprehensive, quality-focused development pipeline. Wor
 
 **Task:** {{args}}
 
+> All shell snippets below assume bash. On Windows, run them through the Bash tool or Git Bash, as constructs like `${VAR:-default}` and heredocs are not valid in PowerShell.
+
 
 ## Advisor - Getting Help When Stuck
 
