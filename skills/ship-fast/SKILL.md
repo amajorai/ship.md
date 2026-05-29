@@ -22,8 +22,10 @@ The goal is to arrive at unambiguous acceptance criteria while asking the user a
 - Acceptance criteria (what done looks like, how to verify)
 - Constraints (performance, backwards compat, existing patterns)
 - Ambiguities (unclear terms, conflicting requirements)
-- GitHub deployment checks (should verify poll deployment status after local tests pass?)
 - Implementation strategy (parallel subagents shared workspace recommended / let agent decide / isolated worktrees)
+
+**User-preference area — exploration CANNOT resolve this. You MUST ask it explicitly during Step B, regardless of what the codebase contains. Never mark it Resolved from exploration findings. No exceptions:**
+- GitHub deployment checks: "Should the verify phase poll GitHub deployment status after local tests pass?" → sets `SHIP_FAST_CHECK_GH_DEPLOYMENTS` (true/false)
 
 **Step A — Explore.** Spawn **2–3 parallel subagents** covering the areas most relevant to what is unresolved:
 

@@ -35,9 +35,11 @@ These two phases run as a single loop. The goal is to arrive at unambiguous acce
 - Constraints (performance, backwards compat, existing patterns, team conventions)
 - Ambiguities (unclear terms, conflicting requirements, edge cases in the task description)
 - Quality gates (edge cases, E2E tests, both, or neither — default: both)
-- GitHub issues (track this work with GitHub issues?)
-- GitHub deployment checks (should verify phases poll deployment status?)
 - Implementation strategy (parallel subagents shared workspace recommended / let agent decide / isolated worktrees)
+
+**User-preference areas — exploration CANNOT resolve these. You MUST ask each one explicitly during Step B, regardless of what the codebase contains. Never mark them Resolved from exploration findings. No exceptions:**
+- GitHub issues: "Should I track this work with GitHub issues?" → sets `SHIP_GH_ENABLED` (true/false)
+- GitHub deployment checks: "Should verify phases poll GitHub deployment status after local tests pass?" → sets `SHIP_CHECK_GH_DEPLOYMENTS` (true/false)
 
 ### Loop iteration
 
